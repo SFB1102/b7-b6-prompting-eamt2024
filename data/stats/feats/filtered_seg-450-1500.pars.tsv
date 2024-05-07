@@ -1,0 +1,5 @@
+corpus	direction	lang	ttype	docs	segs	sents	mean_sents/doc	min_sents/doc	max_sents/doc	tokens	mean_toks/doc	min_toks/doc	max_toks/doc
+europ2018	DE-EN	de	source	1500	38305	42191	28.13 (+/-9.64)	12	87	967385	644.92 (+/-188.45)	425	1615
+europ2018	EN-DE	de	target	1500	36078	38569	25.71 (+/-8.62)	10	73	924919	616.61 (+/-185.99)	348	2056
+europ2018	EN-DE	en	source	1500	36078	36601	24.40 (+/-8.17)	11	70	927045	618.03 (+/-183.80)	425	2120
+europ2018	DE-EN	en	target	1500	38305	39472	26.31 (+/-9.10)	10	82	1060295	706.86 (+/-208.95)	390	1854

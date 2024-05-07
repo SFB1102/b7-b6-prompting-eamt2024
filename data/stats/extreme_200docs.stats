@@ -1,0 +1,5 @@
+lang	type	docs	segs	wc	seg_len+/-std
+de	translated	100	1934	57492	29.7+/-14.1
+de	original	100	1908	59942	31.4+/-17.6
+en	translated	100	1919	65065	33.9+/-19.6
+en	original	100	1987	55128	27.7+/-13.0

@@ -1,0 +1,5 @@
+subcorpus	direction	lang	ttype	docs	segs	mean_segs/doc	tokens	mean_toks/doc	min_toks/doc	max_toks/doc	>2000toks/doc	min_350toks/doc	min_300toks/doc	min_250toks/doc	min_200toks/doc	min_150toks/doc	min_100toks/doc
+europ2018	DE-EN	de	source	17232	201312	11.68 (+/-8.49)	5079843	294.79 (+/-212.79)	8	2072	2	5205	6981	8687	10325	12564	14778
+europ2018	EN-DE	de	target	12474	129992	10.42 (+/-8.02)	3480479	279.02 (+/-205.87)	7	2119	1	3806	4838	5751	7000	8702	10223
+europ2018	EN-DE	en	source	12474	129992	10.42 (+/-8.02)	3456011	277.06 (+/-205.69)	7	2183	1	3728	4783	5677	6897	8662	10185
+europ2018	DE-EN	en	target	17232	201312	11.68 (+/-8.49)	5605369	325.29 (+/-231.75)	8	2267	4	6417	8011	9534	11196	13335	15164
