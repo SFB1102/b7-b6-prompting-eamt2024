@@ -1,0 +1,1 @@
+The initial input (0_align/xml_translationese/) to the corpus-building pipeline can be downloaded from https://doi.org/10.5281/zenodo.11127626

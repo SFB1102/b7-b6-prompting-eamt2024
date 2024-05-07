@@ -1,3 +1,15 @@
+# project files
+0_align/extracted/
+0_align/xml_translationese/
+0_align/glossaries/
+0_align/lf_aligned_xls/
+logs/
+data/conllu/
+data/raw_aligned/
+data/rewritten/
+data/feats_tabled/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
