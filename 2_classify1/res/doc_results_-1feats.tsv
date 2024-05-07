@@ -1,0 +1,3 @@
+algo	support	feats	N_feats	Lang	Size	Accuracy	Precision	Recall	F1
+SVM	3000		34	de	seg-450-1500	88.80 (+/-2.40)	88.87 (+/-2.39)	88.80 (+/-2.40)	88.79 (+/-2.40)
+SVM	3000		51	en	seg-450-1500	79.73 (+/-2.02)	79.79 (+/-2.01)	79.73 (+/-2.02)	79.72 (+/-2.02)
