@@ -59,10 +59,11 @@ The project is structured into five major steps:
 | 0_align/              | align [Europarl procedings](https://github.com/chozelinek/europarl)                          | 
 | 1_parse_extract_feats | produce conllu annotations and use them to extract lexicogrammatical features                | 
 | 2_classify1           | estimate the features and get 200 contrastive documents (100 translated, 100 non-translated) |
-| 3_prompting           |                                                                                              | 
-| 4_classify2           |                                                                                              |
-| 5_analysis            | EN-DE                                                                                        | 
-| 6_human_eval          |                                                                                              |
+| 3_analysis            | exclude collinearity and estimate feature thresholds (=TL norm)                              | 
+| 4_prompting           | generate individual instructions for each segment in each of the 5 modes                     | 
+| 5_parse_extract2      | parse the GPT-4 output for each mode and extract features                                    | 
+| 6_classify2           | run the classifier against the same contrastive non-translations                             |
+| 7_evaluation          | build a multiparallel dataset (src, ht + 5 outputs), extract random 25 segments, run COMET   |
 
 
 
