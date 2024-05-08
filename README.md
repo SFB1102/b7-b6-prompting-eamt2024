@@ -48,22 +48,22 @@ levelling out the impact of individual translator strategies and delivering an e
 that is less distingushable from non-translations in the target language than before the debiasing transformation.
 
 ### Project organisation
-For simplicity, this repository has minimum settings necessary to reproduce our study. 
-For example, we omit the support functions that were used to re-send the failed batches and segments to GPT API again.  
+For simplicity, this repository has minimum settings necessary to understand the general workflow and implementation. 
+We omitted some support functions and intermediary outputs (e.g. that were used to send the failed batches and segments to GPT API again).  
 We provide the output from the GPT-4 obtained originally 08-10 March 2024, as it is unlikely that the new output will be exactly the same.
 
 The project is structured into five major steps:
 
-| research step/folder  | description                                                                                  | 
-|-----------------------|----------------------------------------------------------------------------------------------|
-| 0_align/              | align [Europarl procedings](https://github.com/chozelinek/europarl)                          | 
-| 1_parse_extract_feats | produce conllu annotations and use them to extract lexicogrammatical features                | 
-| 2_classify1           | estimate the features and get 200 contrastive documents (100 translated, 100 non-translated) |
-| 3_analysis            | exclude collinearity and estimate feature thresholds (=TL norm)                              | 
-| 4_prompting           | generate individual instructions for each segment in each of the 5 modes                     | 
-| 5_parse_extract2      | parse the GPT-4 output for each mode and extract features                                    | 
-| 6_classify2           | run the classifier against the same contrastive non-translations                             |
-| 7_evaluation          | build a multiparallel dataset (src, ht + 5 outputs), extract random 25 segments, run COMET   |
+| research step/folder       | description                                                                                  | 
+|----------------------------|----------------------------------------------------------------------------------------------|
+| 0_align/                   | align [Europarl procedings](https://github.com/chozelinek/europarl)                          | 
+| 1_parse_extract_feats/     | produce conllu annotations and use them to extract lexicogrammatical features                | 
+| 2_classify1/               | estimate the features and get 200 contrastive documents (100 translated, 100 non-translated) |
+| 3_analysis/                | exclude collinearity and estimate feature thresholds (=TL norm)                              | 
+| 4_prompting/               | generate individual instructions for each segment in each of the 5 modes                     | 
+| 5_parse_extract2/          | parse the GPT-4 output for each mode and extract features                                    | 
+| 6_classify2/               | run the classifier against the same contrastive non-translations                             |
+| 7_evaluation_and analysis/ | build a multiparallel dataset (src, ht + 5 outputs), extract random 25 segments, run COMET   |
 
 
 
