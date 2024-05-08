@@ -176,25 +176,27 @@ class Logger(object):
         pass
 
 
+def make_dirs(outdir, logsto):
+    os.makedirs(outdir, exist_ok=True)
+    os.makedirs(logsto, exist_ok=True)
+    script_name = sys.argv[0].split("/")[-1].split(".")[0]
+    log_file = f'{logsto}{script_name}.log'
+    sys.stdout = Logger(logfile=log_file)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--feats1', help="fns, labels, text, lemmas, feats and srp vals", default='extract/tabled/seg-450-1500.feats.tsv.gz')
-    parser.add_argument('--feats2', help='folder with feature tables', default='extract/tabled/wide_rewritten/curated/')
+    parser.add_argument('--feats1', help="fns, labels, text, lemmas, feats and srp vals", default='data/feats_tabled/seg-450-1500.feats.tsv.gz')
+    parser.add_argument('--feats2', help='folder with feature tables', default='data/rewritten/curated/feats_tabled2/')
     parser.add_argument('--lose_bypassed', action="store_true", help='Exclude short segs')
     parser.add_argument('--n_feats', type=int, default=58, choices=[15, 58])
-    parser.add_argument('--res', default='analysis/res/filtered_curated/')
-    parser.add_argument('--logs', default='analysis/logs/filtered_curated/')
-    parser.add_argument('--pics', default='analysis/pics/filtered_curated/')
+    parser.add_argument('--logs', default='logs/final_analysis/')
+    parser.add_argument('--pics', default='7_evaluation_and_analysis/pics/')
     args = parser.parse_args()
 
     start = time.time()
 
-    os.makedirs(args.res, exist_ok=True)
-    os.makedirs(args.logs, exist_ok=True)
-    os.makedirs(args.pics, exist_ok=True)
-
-    log_file = f'{args.logs}best_{sys.argv[0].split("/")[-1].split(".")[0]}.log'
-    sys.stdout = Logger(logfile=log_file)
+    make_dirs(args.pics, args.logsto)
 
     print(f"\nRun date, UTC: {datetime.utcnow()}")
     print(f"Run settings: {sys.argv[0]} {' '.join(f'--{k} {v}' for k, v in vars(args).items())}")

@@ -160,9 +160,9 @@ def etwas_neues(smeta=None, current_fns=None, lpair=None):
     return list(mismatching_fns)
 
 
-def make_dirs(conllu, out_stats, logsto):
+def make_dirs(outdir, out_stats, logsto):
     os.makedirs(out_stats, exist_ok=True)
-    os.makedirs(conllu, exist_ok=True)
+    os.makedirs(outdir, exist_ok=True)
     os.makedirs(logsto, exist_ok=True)
     script_name = sys.argv[0].split("/")[-1].split(".")[0]
     log_file = f'{logsto}{script_name}.log'

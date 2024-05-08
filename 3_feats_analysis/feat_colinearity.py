@@ -4,7 +4,7 @@
 While waiting for re-parsed data
 prepare to look at features colinearity
 
-python3 analysis/feat_colinearity.py
+python3 3_feats_analysis/feat_colinearity.py
 '''
 import argparse
 from datetime import datetime
@@ -33,23 +33,24 @@ class Logger(object):
         pass
 
 
+def make_dirs(outdir, logsto):
+    os.makedirs(outdir, exist_ok=True)
+    os.makedirs(logsto, exist_ok=True)
+    script_name = sys.argv[0].split("/")[-1].split(".")[0]
+    log_file = f'{logsto}{script_name}.log'
+    sys.stdout = Logger(logfile=log_file)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--table', default='extract/tabled/seg-450-1500.feats.tsv.gz')
+    parser.add_argument('--table', default='data/feats_tabled/seg-450-1500.feats.tsv.gz')
     parser.add_argument('--level', choices=['seg', 'doc'], default='doc')
-    # parser.add_argument('--zoom', nargs='+', default=None, help='pass a list of features to describe univariately')
-    # parser.add_argument('--zoom_name', default='best_feats', help='how to name the results file?')
-    parser.add_argument('--res', default=f'analysis/res/')
-    parser.add_argument('--logs', default=f'analysis/logs/')
-    parser.add_argument('--pics', default='analysis/pics/')
+    parser.add_argument('--logsto', default=f'logs/initial_analysis/')
+    parser.add_argument('--pics', default='3_feats_analysis/pics/')
     args = parser.parse_args()
 
-    os.makedirs(args.logs, exist_ok=True)
-    log_file = f'{args.logs}{args.level}_colinearity_{args.table.split("/")[-1].rsplit("_", 1)[0]}.log'
-    os.makedirs(args.res, exist_ok=True)
-    os.makedirs(args.pics, exist_ok=True)
+    make_dirs(args.pics, args.logsto)
 
-    sys.stdout = Logger(logfile=log_file)
     print(f"\nRun date, UTC: {datetime.utcnow()}")
     print(f"Run settings: {sys.argv[0]} {' '.join(f'--{k} {v}' for k, v in vars(args).items())}")
 
@@ -60,8 +61,6 @@ if __name__ == '__main__':
     best_dict = {
         "de": ['acl', 'addit', 'advcl', 'advmod', 'case', 'fin', 'mean_sent_wc', 'mhd', 'nmod', 'parataxis', 'pastv', 'poss', 'relcl', 'ttr'],
         "en": ['addit', 'advers', 'advmod', 'case', 'compound', 'conj', 'fin', 'mean_sent_wc', 'mhd', 'nmod', 'numcls', 'obl']}
-    # best_dict = {'de': ['advmod', 'ttr', 'pastv', 'mdd', 'nmod', 'parataxis', 'fin', 'advers', 'mhd', 'poss', 'numcls', 'nnargs', 'addit'],
-    #              'en': ['advmod', 'xcomp', 'mean_sent_wc', 'advers', 'case', 'mhd', 'advcl', 'nmod', 'fin', 'numcls', 'obl', 'addit', 'sconj', 'compound']}
 
     for lang in ['de', 'en']:
         df = df0[df0['lang'] == lang]
@@ -95,7 +94,7 @@ if __name__ == '__main__':
             'font.weight': 'normal'
         })
 
-        ax = sns.heatmap(reordered_corr_matrix, annot=True, cmap='coolwarm', fmt='.2f', square=True, linewidth=.5)
+        ax = sns.heatmap(reordered_corr_matrix, annot=False, cmap='coolwarm', fmt='.2f', square=True, linewidth=.5)
 
         # # x-labels to the top axis
         # ax.set(xlabel="", ylabel="")

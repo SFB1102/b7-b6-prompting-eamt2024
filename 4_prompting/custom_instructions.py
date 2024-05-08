@@ -1,6 +1,6 @@
 """
-9 March
-massive update to reflect reconceptualised types of prompts: we have two approaches by two modes now
+9 March 2024
+a massive update to reflect reconceptualised types of prompts: we have two approaches by two modes now
 
 prints stats on the most_first and most_second instructions
 
@@ -11,19 +11,14 @@ this splits the process of prompt generation into 2 subprocesses:
 (2) for each of the 10 (sic!) possible setup from the combination of 3 args.mode options and 3 args.content option + lazy
 outputs a table with formated prompts to be fed to the model (after chunking)
 
-21 October 2023
-re-working after the failed main LREC deadline
-
 5 October 2023
-this is a lighter version of api_seg_template.py, which estimates the size of input for GPT-3.5 Turbo API
+The script calculates the size of input for GPT3.5-turbo and GPT-4 to estimate costs
+but the real expenses incurred also include the output which we cannot predict.
 
-# for now requires a separate run for each language
-python3 prompt/custom_instructions.py --lang en --mode min --content triad --how_tiny 2 --vratio 1  # this should set std formular
-python3 prompt/custom_instructions.py --lang en --mode min --content triad --how_tiny 2 --vratio 2
-python3 prompt/custom_instructions.py --lang de --mode min --content triad --how_tiny 2 --vratio 2
+In the end, in March 2024 we ended up paying around 400 euros for all experiments since October 2023, including GPT3.5 and GPT-4
 
-11 March
-prompt/custom_instructions.py --tables prompt/input/new/ --level seg --mode min --vratio 2.0 --approach feature-based --thresholds analysis/res/ --lang en
+
+python3 4_prompting/custom_instructions.py --tables 4_prompting/input/ --level seg --mode min --vratio 2.5 --approach feature-based --thresholds 3_feats_analysis/res/ --lang en
 
 """
 import ast
