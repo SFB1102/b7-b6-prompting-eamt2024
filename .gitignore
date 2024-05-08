@@ -8,7 +8,7 @@ data/conllu/
 data/raw_aligned/
 data/rewritten/
 data/feats_tabled/
-4_prompting/input/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
