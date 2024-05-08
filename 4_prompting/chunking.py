@@ -3,7 +3,7 @@
 
 Chunk the input table into files containing max 30 segments to try and fit into the timeout window
 
-python3 prompt/chunking.py --tables prompt/ol_prompts/new/ --setup None
+python3 prompt/chunking.py --tables 4_prompting/ol_prompts/ --setup None
 
 """
 
@@ -37,10 +37,10 @@ def split_tsv_into_chunks(input_df, output_directory=None, chunk_size=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # prompt/ol_prompts/ or prompt/ol_prompts/docs/
-    parser.add_argument('--tables', help="tsv with src,tgt,prompts,thresholds", default='prompt/ol_prompts/new/', required=True)
+    parser.add_argument('--tables', help="tsv with src,tgt,prompts,thresholds", default='4_prompting/ol_prompts/', required=True)
     parser.add_argument('--n_segs', default=15)  # en 74 chunks + 13 segs in chunk 75; de 85 chunks + 6 segs in #86
     parser.add_argument('--setup', help="pass specific setups to chunk, e.g. seg_lazy or 'None' for chunking all files with prompts in one go", required=True)
-    parser.add_argument('--res', default='prompt/chunked_input/new/')
+    parser.add_argument('--res', default='4_prompting/chunked_input/')
 
     args = parser.parse_args()
 

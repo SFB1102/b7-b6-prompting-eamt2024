@@ -1,8 +1,8 @@
 # project files
-0_align/extracted/
-0_align/xml_translationese/
-0_align/glossaries/
-0_align/lf_aligned_xls/
+/0_align/extracted/
+/0_align/xml_translationese/
+/0_align/glossaries/
+/0_align/lf_aligned_xls/
 logs/
 data/conllu/
 data/raw_aligned/
@@ -170,3 +170,4 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
+
