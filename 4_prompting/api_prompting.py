@@ -16,7 +16,7 @@ requires a separate run for each language
 This script is supposed to be called from a shell script for each of the 25-segments-long chunks (out of 86 for DE and 75 for EN)
 
 The chunks which timed_out need to be copied over to a timeout/de_lazy/ or timeout/en_lazy/ and run again from bash script
-see ids of timed out chunks in logs: prompt/logs/feeding/
+see ids of timed out chunks in logs: logs/feeding/
 """
 
 import sys
@@ -30,10 +30,7 @@ import openai
 import os
 
 # Set your OpenAI API key
-# openai.api_key = "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"  # Koels
-openai.api_key = "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"  # coling15
-# openai.api_key = "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"  # Koels
-# openai.api_key = "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"  # Koels 10 March
+openai.api_key = "..."
 
 
 def generate_output(prompt, model_name, temperature=None):
@@ -89,8 +86,7 @@ if __name__ == "__main__":
     parser.add_argument('--tempr', type=float, required=True)
     parser.add_argument('--lang', required=True)
     # this is changed to add flexibility to the re-use of the pipeline for re-working
-    parser.add_argument('--res', required=True)  # default='prompt/chunked_output/new/'
-    # parser.add_argument('--logs', default='prompt/logs/')
+    parser.add_argument('--res', required=True)  # default='4_prompting/chunked_output/'
 
     args = parser.parse_args()
 

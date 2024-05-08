@@ -6,18 +6,13 @@ this script outputs:
     inc. for earlier versions of the re-writing pipeline where the input to rewriting needs to be added to the output.
     Namely, the script tests whether the output tables have 2 or more columns: 21 Nov I changed the output of (lang)_api_prompting.py to include everything
     but I don't want to re-infer with GPT
-(2) one input table per run with segments to be reworked e.g. prompt/_reworks/re_temp0.3_de_lazy.tsv
+(2) one input table per run with segments to be reworked e.g. 4_prompting/_reworks/re_temp0.3_de_lazy.tsv
 
 I need a separate script which would take the reworked segments and insert them
-instead on blanks into respective tables in prompt/_megaouts/out_temp0.3_de_lazy.tsv
+instead on blanks into respective tables in 4_prompting/_megaouts/out_temp0.3_de_lazy.tsv
 
 USAGE:
-python3 prompt/get_megaouts_and_reworks.py --chunked_output prompt/chunked_output/gpt-4/ --temp 0.3 --setup lazy
-# has 6 columns, not 2!
-
-another run (extra_pass/) on prompt/_reworks/output/; --megaouts is NOT used!
-python3 prompt/get_megaouts_and_reworks.py --chunked_output prompt/_reworks/output/gpt-4/ --temp 0.3 --setup lazy --reworks prompt/_extra_reworks/input/
-
+python3 prompt/get_megaouts_and_reworks.py --chunked_output 4_prompting/chunked_output/gpt-4/ --temp 0.3 --setup lazy
 """
 
 import argparse
@@ -136,23 +131,21 @@ class Logger(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--all_prompts', help='initial unchunked files', default='prompt/ol_prompts/new/')
+    parser.add_argument('--all_prompts', help='initial unchunked files', default='4_prompting/ol_prompts/')
     parser.add_argument('--chunked_output', help='chunked output to add to big table',
-                        default='prompt/chunked_output/new/')
+                        default='4_prompting/chunked_output/')
     parser.add_argument('--model', required=True)  # gpt-3.5-turbo, gpt-4
     parser.add_argument('--temp', choices=['0.7'], default=0.7)  # '0.0', '0.3', '0.5',
     parser.add_argument('--setup', choices=['seg_self-guided_min', 'seg_self-guided_detailed',
-                                            'seg_feature-based_min', 'seg_feature-based_detailed', 'seg_translated_min',
-                                            "lazy", "seg_min_triad_vratio2.5", "seg_detailed_triple_vratio2.5",
-                                            "seg_lazy", "seg_expert", "seg_detailed_triad_vratio2.5",
-                                            "min_srclos_vratio2", "min_tgtlos_vratio2",
-                                            "min_triad_vratio2", 'tiny2_triad_vratio3'],
+                                            'seg_feature-based_min_ratio2.5', 'seg_feature-based_detailed_ratio2.5',
+                                            'seg_feature-based_min_std2', 'seg_feature-based_detailed_std2',
+                                            'seg_translated_min'],
                         help='for path re-construction', required=True)
-    # aligned_with_rewritten.tsv is saved to the project dir
-    parser.add_argument('--megaouts', default='prompt/_megaouts/input/new/')
+
+    parser.add_argument('--megaouts', default='4_prompting/input/')
     parser.add_argument('--n_segs', help='number of segs per chunk in the re-working loop', default=10)
-    parser.add_argument('--reworks', default='prompt/_reworks/input/new/')
-    parser.add_argument('--logs', default='prompt/logs/new/')
+    parser.add_argument('--reworks', default='4_prompting/_reworks/input/')
+    parser.add_argument('--logs', default='logs/collecting_rewritten/')
 
     args = parser.parse_args()
 
@@ -190,7 +183,7 @@ if __name__ == "__main__":
         print(input_n_chunks)
         if 'reworks' in args.chunked_output:
             this_lang_df, this_lang_reworks, skipped_segs, faulty_chunks, send_back_lst = align_with_input(
-                prechunk_dir=f"prompt/_reworks/input/{args.model}/",
+                prechunk_dir=f"4_prompting/_reworks/input/{args.model}/",
                 rewritten_dir=f"{path_to_rewritten}",
                 expected_n=input_n_chunks,
                 my_lang=tlang,

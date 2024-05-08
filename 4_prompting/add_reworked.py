@@ -1,16 +1,14 @@
 """
 22 Nov 2023
-enriching _megaouts/ with _reworks/output/, saving to extract/tabled/rewritten/
-
-USAGE:
-python3 prompt/add_reworked.py --temp 0.3 --setup lazy
+enriching 4_prompting/output/ with _reworks/output/
 
 * for _extra_rework setup: Don't for get to specify the _extra folder!!!
-python3 prompt/add_reworked.py --temp 0.0 --setup lazy --reworks prompt/_extra_reworks/output/gpt-3.5-turbo/
+GPT-4 does not require these extra loop. You can have luckiy runs on GPT3.5-turbo, too
+python3 4_prompting/add_reworked.py --temp 0.0 --setup lazy --reworks 4_prompting/_extra_reworks/output/gpt-3.5-turbo/
 
 10-11 Mar 2024
-python3 prompt/add_reworked.py --temp 0.7 --setup seg_self-guided_min --model gpt-4
-python3 prompt/add_reworked.py --temp 0.7 --setup seg_translated_min --model gpt-4
+python3 4_prompting/add_reworked.py --setup seg_self-guided_min --model gpt-4
+python3 4_prompting/add_reworked.py --setup seg_translated_min --model gpt-4
 
 """
 
@@ -26,6 +24,8 @@ import pandas as pd
 
 
 # this used to be a problem in early re-writing attempts
+# TODO this needs to be better, and it still does not capture all patterns.
+#  We curated the outputs (ratio2.5 and std2) manually in the end
 def filter_llm_artefacts(df_in=None):
     df_in['rewritten'] = df_in['rewritten'].apply(lambda x: x.strip('"'))
     df_in['rewritten'] = df_in['rewritten'].str.replace("Here's a revised version of the translation:\n", '')
@@ -119,19 +119,17 @@ class Logger(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--megaouts', default='prompt/_megaouts/input/new/')
-    parser.add_argument('--reworks', default='prompt/_reworks/output/new/')
-    parser.add_argument('--model', required=True)  # gpt-3.5-turbo, gpt-4
-    parser.add_argument('--temp', choices=['0.7'], default=0.7)  # '0.0', '0.3', '0.5',
-    parser.add_argument('--setup', choices=['seg_feature-based_min', 'seg_feature-based_detailed', 'seg_translated_min',
-                                            'seg_self-guided_min', 'seg_self-guided_detailed',
-                                                                   "lazy", "seg_lazy", "seg_expert",
-                                            "seg_min_triad_vratio2.5", "seg_detailed_triple_vratio2.5",
-                                            "min_srclos_vratio2", "min_tgtlos_vratio2",
-                                            "min_triad_vratio2", "tiny2_triad_vratio3"],
+    parser.add_argument('--megaouts', default='4_prompting/input/')
+    parser.add_argument('--reworks', default='4_prompting/_reworks/output/')
+    parser.add_argument('--model', required=True, default="gpt-4")  # gpt-3.5-turbo, gpt-4
+    parser.add_argument('--temp', choices=['0.7'], default=0.7, help='kept here for path-retrieval consistency')
+    parser.add_argument('--setup', choices=['seg_self-guided_min', 'seg_self-guided_detailed',
+                                            'seg_feature-based_min_ratio2.5', 'seg_feature-based_detailed_ratio2.5',
+                                            'seg_feature-based_min_std2', 'seg_feature-based_detailed_std2',
+                                            'seg_translated_min'],
                         help='for path re-construction', required=True)
-    parser.add_argument('--res', default='prompt/_megaouts/output/new/')
-    parser.add_argument('--logs', default='prompt/logs/new/')
+    parser.add_argument('--res', default='4_prompting/output/')
+    parser.add_argument('--logs', default='logs/collecting_rewritten/')
 
     args = parser.parse_args()
 
@@ -139,7 +137,7 @@ if __name__ == "__main__":
     current_datetime = datetime.utcnow()
     formatted_datetime = current_datetime.strftime('%Y-%m-%d_%H:%M')
 
-    mega_outdir = f'{args.res}{args.model}/temp{args.temp}/'
+    mega_outdir = f'{args.res}{args.model}/'
     os.makedirs(mega_outdir, exist_ok=True)
 
     os.makedirs(args.logs, exist_ok=True)
@@ -151,7 +149,7 @@ if __name__ == "__main__":
     print(f"\nRun date, UTC: {formatted_datetime}")
     print(f"Run settings: {sys.argv[0]} {' '.join(f'--{k} {v}' for k, v in vars(args).items())}")
 
-    for tlang in ['de', 'en']:  #
+    for tlang in ['de', 'en']:
         path_to_rewritten = f"{args.reworks}{args.model}/temp{args.temp}/{tlang}_{args.setup}/"
         megaouts_infile = f'{args.megaouts}{args.model}/temp{args.temp}/{tlang}_{args.setup}.tsv'
         mega_pathname = f'{mega_outdir}{tlang}_{args.setup}.tsv.gz'

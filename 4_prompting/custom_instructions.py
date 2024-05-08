@@ -131,8 +131,8 @@ def split_list_by_last_index(lst, last_indices):
     return sublists
 
 
-def ratio_based_tuples_generator(tuples_lst_in=None, ratio_thres=None):
-    '''
+def ratio_based_tuples_generator(tuples_lst_in=None, my_thres=None):
+    """
     Args:
         ratio_thres:
         tuples_lst_in: all valid sanity tuples: [(0, ('advmod', 1.0, 2.885, 'add')), (1, ('ttr', 1.0, 0.962, 'remove')),
@@ -142,9 +142,11 @@ def ratio_based_tuples_generator(tuples_lst_in=None, ratio_thres=None):
     Returns: the input list of tuples (1) filtered based on the > 3 ratio
     between the anticipated bigger and anticipated smaller values, if observed value is over 0
     and (2) sorted by the size of the ratio
-    '''
+    """
     lst_out = []
-    if ratio_thres == 1 or ratio_thres == 2:
+    if my_thres == 'std2':
+        ratio_thres_num = int(my_thres[-1])
+
         for itm in tuples_lst_in:
 
             if itm[1][1] > 0:
@@ -153,32 +155,33 @@ def ratio_based_tuples_generator(tuples_lst_in=None, ratio_thres=None):
                     big_diff = itm[1][1] - itm[1][2]
                     # print(big_diff)
                     # observed - expected = + 0.75 else pass
-                    if abs(big_diff) > (itm[1][4] * ratio_thres):
+                    if abs(big_diff) > (itm[1][4] * ratio_thres_num):
                         if big_diff > 0:  # more than one std
                             lst_out.append((itm, big_diff))
                 else:
                     # print('Am I here?')
                     big_diff = itm[1][1] - itm[1][2]
-                    if abs(big_diff) > (itm[1][4] * ratio_thres) and big_diff < 0:  # more than one std
+                    if abs(big_diff) > (itm[1][4] * ratio_thres_num) and big_diff < 0:  # more than one std
                         lst_out.append((itm, big_diff))
             else:
                 print('I should not get here, all tuples with observed_zero are filtered out already')
                 exit()
-    else:  # this is the old routine for 2.5 ratio
+    else:  # this is the old routine for ratio2.5
         # print(f'\n*** Using {ratio_thres} ratio, not STD as cut-off ***\n')
+        ratio_thres_num = float(my_thres.replace('ratio', ''))
 
         for itm in tuples_lst_in:
             # (11, ('nn', 0.1392405063291139, 0.199, 'add', 0.0783081982107748))
             if itm[1][1] > 0 and itm[1][2] > 0:
                 if itm[1][3] == 'remove':
                     # observed / expected
-                    if itm[1][1] / itm[1][2] >= ratio_thres:
+                    if itm[1][1] / itm[1][2] >= ratio_thres_num:
                         big_diff = itm[1][1] / itm[1][2]
                         lst_out.append((itm, big_diff))
                 else:
                     # print('Am I here?')
                     # print(itm[1][2] / itm[1][1], ratio_thres)
-                    if itm[1][2] / itm[1][1] >= ratio_thres:
+                    if itm[1][2] / itm[1][1] >= ratio_thres_num:
                         big_diff = itm[1][2] / itm[1][1]
                         lst_out.append((itm, big_diff))
             else:
@@ -201,7 +204,7 @@ def filter_n_sort(my_instr=None, my_tuples=None, my_ratio=None):
     # print(tuple_list_with_indices)
     filtered_lst = []
     selected_tuple_list_with_indices = ratio_based_tuples_generator(tuples_lst_in=tuple_list_with_indices,
-                                                                    ratio_thres=my_ratio)
+                                                                    my_thres=my_ratio)
 
     sorted_indices = [ind for ind, _ in selected_tuple_list_with_indices]
     # print(sorted_indices)
@@ -321,31 +324,6 @@ feat_dict = {'de': {'seg': ['acl', 'addit', 'advcl', 'advmod', 'advmod_verb', 'a
                             'obl', 'parataxis',
                             'pastv', 'ppron', 'prep', 'sconj', 'self', 'tempseq', 'vorfeld', 'wdlen', 'xcomp']}
              }
-
-
-# # as of 8 Mar 2024  15 feats: no shorts!
-# feat_dict = {'de': {
-#     'doc': ['addit', 'advcl', 'advmod', 'caus', 'ccomp', 'fin', 'mdd', 'mean_sent_wc', 'mhd', 'nmod', 'parataxis',
-#             'pastv', 'poss', 'simple', 'ttr'],
-#     'seg': ['addit', 'advcl', 'advmod', 'caus', 'fin', 'iobj', 'mean_sent_wc', 'mhd', 'nmod', 'nnargs', 'parataxis',
-#             'pastv', 'poss', 'self', 'ttr']},
-#     'en': {'doc': ['addit', 'advcl', 'advers', 'compound', 'conj', 'demdets', 'fin', 'mean_sent_wc', 'mhd',
-#                    'nmod', 'nnargs', 'numcls', 'obl', 'ppron', 'sconj'],
-#            'seg': ['addit', 'advcl', 'advers', 'advmod', 'aux:pass', 'compound', 'conj', 'fin',
-#                    'mean_sent_wc', 'mhd', 'nmod', 'nnargs', 'numcls', 'obl', 'pastv']}
-# }
-
-# # as of 7 Dec 2023  15 feats
-# feat_dict = {'de': {
-#     'doc': ['addit', 'advcl', 'advmod', 'caus', 'ccomp', 'fin', 'mdd', 'mean_sent_wc', 'mhd', 'nmod', 'parataxis',
-#             'pastv', 'poss', 'simple', 'ttr'],
-#     'seg': ['addit', 'advcl', 'advmod', 'caus', 'fin', 'iobj', 'mdd', 'mean_sent_wc', 'mhd', 'nmod', 'nnargs',
-#             'parataxis', 'pastv', 'poss', 'ttr']},
-#     'en': {'doc': ['addit', 'advcl', 'advers', 'compound', 'conj', 'demdets', 'fin', 'mean_sent_wc', 'mhd',
-#                    'nmod', 'nnargs', 'numcls', 'obl', 'ppron', 'sconj'],
-#            'seg': ['addit', 'advcl', 'advers', 'advmod', 'compound', 'conj', 'mean_sent_wc', 'mhd', 'negs',
-#                    'nmod', 'nnargs', 'numcls', 'obl', 'pastv', 'ppron']}
-# }
 
 # detailed description for the top 15 segment level predictors
 # examples are given in the descending order of frequency in translations
@@ -794,49 +772,50 @@ SCRIPTURES = {'fin': ['Use full clauses instead of non-finite constructions.',
 # various types of information in the prompt (no source [srclos], no target[tgtlos], no detailed linguistic instruction [lazy]).
 
 
+def make_dirs(my_new_dirs=None, sub=None, more4logging=None):
+    for i in my_new_dirs:
+        if 'logs' in i:
+            i = i.replace('logs/', f'logs/pregenerate/')
+            os.makedirs(i, exist_ok=True)
+            script_name = sys.argv[0].split("/")[-1].split(".")[0]
+            log_file = f'{i}{more4logging}_{script_name}.log'
+            sys.stdout = Logger(logfile=log_file)
+        else:
+            os.makedirs(i, exist_ok=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--tables', help="segs from top 100 documents by SVM probability with 60 feat vals",
-                        default='prompt/input/new/')
+                        default='4_prompting/input/')
     parser.add_argument('--level', choices=['seg'],
                         help='feed segments or entire documents', default='seg')
     parser.add_argument('--mode', choices=['min', 'detailed'],
                         help='select intensity of the instruction mode', required=True)
-    parser.add_argument('--vratio', type=float, choices=[1, 2, 2.5],
-                        help='the thres for the ratio btw anticipated bigger/smaller feature vals; 1 for 1 std',
-                        required=True)
-    parser.add_argument('--approach', choices=['self-guided', 'feature-based', 'translated'],  # 'srclos', 'tgtlos',
+    parser.add_argument('--approach', choices=['self-guided', 'feature-based', 'translated'],
                         help='which component of the instruction to run with: all three, no sources, no human targets, no specific instruction',
                         required=True)
-    # run python3 analysis/feat_analysis.py --best_selection --sample contrastive --level seg
+    # run python3 3_feats_analysis/univariate_analysis.py --best_selection --sample contrastive --level seg
     parser.add_argument('--thresholds', help="a results table from feature analysis",
-                        default='analysis/res/')
+                        default='3_feats_analysis/res/')
+    parser.add_argument('--thres_type', choices=['ratio2.5', 'std2'], default='ratio2.5', required=True)
     parser.add_argument('--lang', required=True)
-    parser.add_argument('--res', default='prompt/ol_prompts/std2/')
-    parser.add_argument('--stats', default='prompt/stats/std2/')
-    parser.add_argument('--logs', default='prompt/logs/std2/')
+    parser.add_argument('--outdir', default='4_prompting/ol_prompts/')
+    parser.add_argument('--statsto', default='4_prompting/stats/')
+    parser.add_argument('--logsto', default='logs/')
     parser.add_argument('--verbosity', type=int, default=0)
 
     args = parser.parse_args()
 
     start = time.time()
 
-    resto = f'{args.res}'
-    os.makedirs(resto, exist_ok=True)
-    os.makedirs(args.logs, exist_ok=True)
-    os.makedirs(args.stats, exist_ok=True)
-
-    log_file = f'{args.logs}{args.lang}_{args.approach}_{args.mode}_{sys.argv[0].split("/")[-1].split(".")[0]}.log'
-    sys.stdout = Logger(logfile=log_file)
+    make_dirs(my_new_dirs=[args.outdir, args.statsto, args.logsto], sub=args.thres_type,
+              more4logging=f'{args.lang}_{args.approach}_{args.mode}')
 
     print(f"\nRun date, UTC: {datetime.utcnow()}")
     print(f"Run settings: {sys.argv[0]} {' '.join(f'--{k} {v}' for k, v in vars(args).items())}")
 
     best_selection_seg = list(set(feat_dict['de']['seg']).union(feat_dict['en']['seg']))
-    # print(f"Number of in the UNION of best features in both langs for seg-level: {len(best_selection_seg)}")
-    # print(
-    #     f"SHARED best features (for seg) in both langs: ({len(list(set(feat_dict['de']['seg']).intersection(feat_dict['en']['seg'])))}): "
-    #     f"{list(set(feat_dict['de']['seg']).intersection(feat_dict['en']['seg']))}")
 
     # prepare threshold information
     thres_df = pd.read_csv(f'{args.thresholds}{args.level}_feat-stats_all_sample_contrastive.tsv', sep='\t')
@@ -941,7 +920,7 @@ if __name__ == "__main__":
                 fired_feats, selected_instructions, mode_selected_tuples = filter_n_sort(
                     my_instr=ol_instructions,
                     my_tuples=ol_tuples,
-                    my_ratio=args.vratio)
+                    my_ratio=args.thres_type)
                 # print(selected_instructions)
                 # print(mode_selected_tuples)
                 # input()
@@ -1021,7 +1000,7 @@ if __name__ == "__main__":
     # print(f'GPT-3.5 API cost (job_size / 1000 * 0.0010): {input_costs} USD (input only!)')
     # print(
     #     f'GPT-4 API cost (job_size / 1000 * 0.03): {input_costs4} USD (input only!, output should be smaller in tokens but twice as expensive)')
-    print(f'Number of bypassed segments (ratio < {args.vratio} for all considered feats): {low_vratio}')
+    print(f'Number of bypassed segments (ratio < {args.thres_type} for all considered feats): {low_vratio}')
     print(f'Number of copied over segments (len < 8 words ): {shorts}')
     info_on_intensity_dict['lang'] = args.lang
     info_on_intensity_dict['job_size (tokens)'] = job_size
@@ -1029,7 +1008,7 @@ if __name__ == "__main__":
     info_on_intensity_dict['mean prompt (tokens)'] = round(np.mean(total_wc), 1)
     info_on_intensity_dict['GPT-4 input costs, USD'] = input_costs4
     info_on_intensity_dict['GPT-3.5 input costs, USD'] = input_costs
-    info_on_intensity_dict[f'ratio<{args.vratio}'] = low_vratio
+    info_on_intensity_dict[f'ratio<{args.thres_type}'] = low_vratio
     info_on_intensity_dict[f'length<8'] = shorts
 
     df = pd.DataFrame(prompts_dict)
@@ -1043,15 +1022,15 @@ if __name__ == "__main__":
         dic_sort = OrderedDict(sorted(global_counter.items(), key=itemgetter(1), reverse=True))
         print()
         tuples = list(dic_sort.items())
-        if args.vratio == 2.5:
-            rtype = 'ratio'
-        else:
-            rtype = 'STD'
-        print(f'{args.lang.upper()}: Counts of features that went through the {args.vratio} {rtype} cut-off')
+        # if args.thres_type == 2.5:
+        #     rtype = 'ratio'
+        # else:
+        #     rtype = 'STD'
+        print(f'{args.lang.upper()}: Counts of features that went through the {args.thres_type} cut-off')
 
-        os.makedirs('prompt/cutoffs/', exist_ok=True)
+        os.makedirs('4_prompting/cutoffs/', exist_ok=True)
         with open(
-                f'prompt/cutoffs/{args.lang}_{len(feat_dict[args.lang][args.level])}_{args.vratio}{rtype}_{args.approach}_{args.mode}.tsv',
+                f'4_prompting/cutoffs/{args.lang}_{len(feat_dict[args.lang][args.level])}_{args.thres_type}_{args.approach}_{args.mode}.tsv',
                 'w') as outf:
             for tu in tuples:
                 print('\t'.join(i for i in [tu[0], str(tu[1])]))
@@ -1089,21 +1068,17 @@ if __name__ == "__main__":
         print(f'i.e. we are not sending {tot_skipped / df.shape[0] * 100:.2f}% for {args.lang} to the model')
 
     # ====== this is my key output =======
-    oname = f'{resto}{args.lang}_{args.level}_{args.approach}_{args.mode}{args.vratio}.tsv'
+    if args.approach == 'feature-based':
+        oname = f'{args.outdir}{args.lang}_{args.level}_{args.approach}_{args.mode}_{args.thres_type}.tsv'
+    else:
+        # threshold does not matter for feature-less approaches: self-guided and translated
+        oname = f'{args.outdir}{args.lang}_{args.level}_{args.approach}_{args.mode}.tsv'
     df.to_csv(oname, sep='\t', index=False)
 
-    # for i in df.prompt.tolist()[:2]:
-    #     print(i)
-    #     print()
-    # print(f'All prompts for {args.level} are written to {oname}\n')
-
     stats_df = pd.DataFrame(info_on_intensity_dict, index=[0])
-    # print()
-    # print(stats_df)
-    # print()
 
     stats_df.to_csv(
-        f'{args.stats}{args.lang}_{args.level}_{args.approach}_{args.mode}_how_much_instr{args.vratio}.tsv',
+        f'{args.statsto}{args.lang}_{args.level}_{args.approach}_{args.mode}_how_much_instr={args.thres_type}.tsv',
         sep='\t', index=False)
 
     endtime_tot = time.time()

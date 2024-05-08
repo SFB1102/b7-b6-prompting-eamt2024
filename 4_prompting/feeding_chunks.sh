@@ -32,20 +32,20 @@ for my_lang in "de" "en"; do
 
   # Reworks input
   if [ "$mode" = "reworks" ]; then
-    input_folder="prompt/_reworks/input/${gpt}/temp${temperature}/${my_lang}_${level}_${my_mode}/"
-    outto="prompt/_reworks/output/"  # output folders are made and formated in the py script
+    input_folder="4_prompting/_reworks/input/${gpt}/temp${temperature}/${my_lang}_${level}_${my_mode}/"
+    outto="4_prompting/_reworks/output/"  # output folders are made and formated in the py script
     echo "Reworks mode ON"
   else  # assume empty string
     # Specify the input folder chunked_input/${my_mode}  or testing (for timeout chunks)
-    input_folder="prompt/chunked_input/new/${my_lang}_${level}_${my_mode}/"
-    outto="prompt/chunked_output/new/"
+    input_folder="4_prompting/chunked_input/${my_lang}_${level}_${my_mode}/"
+    outto="4_prompting/chunked_output/"
     echo "Running initial re-writing"
   fi
 
   echo "input: $input_folder"
   echo "outto: $outto"
 
-  logdir="prompt/logs/feeding"
+  logdir="logs/feeding"
   mkdir -p ${logdir}
 
   log_file="${logdir}/${my_mode}_feeding_error_t-${temperature}.log"
@@ -65,7 +65,7 @@ for my_lang in "de" "en"; do
           log_message "Processing file: $file"
 
           # Call your Python script with arguments
-          python3 prompt/api_prompting.py --lang "$my_lang" --tempr "$temperature" --res "$outto" --chunk_path "$file" --model "$gpt" 2>&1 | tee -a "$log_file"
+          python3 4_prompting/api_prompting.py --lang "$my_lang" --tempr "$temperature" --res "$outto" --chunk_path "$file" --model "$gpt" 2>&1 | tee -a "$log_file"
       fi
   done
 
