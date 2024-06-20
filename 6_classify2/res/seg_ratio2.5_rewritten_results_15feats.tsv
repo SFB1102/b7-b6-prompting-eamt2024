@@ -1,0 +1,11 @@
+algo	support	setup	model	feats	N_feats	Lang	corpus	Accuracy	Precision	Recall	F1
+SVM	3964	self-guided_min	gpt4	acl advcl mark nmod parataxis advmod ttr wdlen nnargs mean_sent_wc poss addit advers caus pastv	15	de	rewritten	81.84 (+/-1.73)	82.00 (+/-1.75)	81.72 (+/-1.76)	81.76 (+/-1.76)
+SVM	3964	self-guided_detailed	gpt4	acl advcl conj mark nmod obj parataxis advmod ttr wdlen mean_sent_wc poss addit caus pastv	15	de	rewritten	80.88 (+/-2.20)	81.10 (+/-2.18)	80.71 (+/-2.21)	80.76 (+/-2.22)
+SVM	3964	translated_min	gpt4	acl advcl ccomp mark nmod advmod ttr wdlen numcls nnargs mean_sent_wc poss addit caus pastv	15	de	rewritten	80.93 (+/-1.88)	80.98 (+/-1.89)	80.86 (+/-1.91)	80.87 (+/-1.90)
+SVM	3937	feature-based_min	gpt4	acl mark nsubj parataxis advmod ttr wdlen numcls fin mpred mean_sent_wc addit caus advqua pastv	15	de	rewritten	81.18 (+/-1.35)	81.48 (+/-1.38)	81.03 (+/-1.36)	81.07 (+/-1.36)
+SVM	3964	feature-based_detailed	gpt4	acl mark parataxis advmod ttr mhd wdlen mpred mean_sent_wc addit advers caus advqua self pastv	15	de	rewritten	81.43 (+/-1.79)	81.79 (+/-1.68)	81.23 (+/-1.85)	81.29 (+/-1.84)
+SVM	4096	self-guided_min	gpt4	acl advcl conj compound nmod obl advmod ttr wdlen nnargs fin mean_sent_wc cconj addit advers	15	en	rewritten	76.46 (+/-2.43)	76.49 (+/-2.43)	76.46 (+/-2.42)	76.44 (+/-2.43)
+SVM	4096	self-guided_detailed	gpt4	acl advcl conj compound nmod obl advmod ttr wdlen nnargs fin mean_sent_wc cconj addit prep	15	en	rewritten	75.56 (+/-2.68)	75.59 (+/-2.68)	75.50 (+/-2.70)	75.51 (+/-2.70)
+SVM	4096	translated_min	gpt4	acl advcl conj compound nmod obl advmod ttr wdlen nnargs fin mean_sent_wc addit advers prep	15	en	rewritten	76.17 (+/-2.50)	76.20 (+/-2.48)	76.15 (+/-2.50)	76.14 (+/-2.51)
+SVM	4096	feature-based_min	gpt4	acl advcl aux conj compound nmod advmod ttr wdlen nnargs fin mean_sent_wc ppron cconj prep	15	en	rewritten	77.39 (+/-2.24)	77.44 (+/-2.23)	77.34 (+/-2.25)	77.34 (+/-2.26)
+SVM	4096	feature-based_detailed	gpt4	acl advcl conj compound nmod nummod obl ttr wdlen nnargs fin mean_sent_wc ppron cconj prep	15	en	rewritten	73.85 (+/-2.67)	73.89 (+/-2.67)	73.79 (+/-2.69)	73.79 (+/-2.69)

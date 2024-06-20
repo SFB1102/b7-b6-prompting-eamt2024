@@ -237,7 +237,7 @@ def plot_weighted_scores(x, y, feature_names=None, colors=None, saveresto=None, 
     # I need weights for all and for optimal feature sets
     if weights_df.shape[0] == 58:
         weights_df.to_csv(f'{saveresto}allfeats_{run}_{weights_df.shape[0]}feats.tsv', sep='\t', index=False)
-    elif 15 < weights_df.shape[0] < 58:
+    elif 15 <= weights_df.shape[0] < 58:
         weights_df.to_csv(f'{saveresto}optfeats_{run}_{weights_df.shape[0]}feats.tsv', sep='\t', index=False)
     else:
         pass
