@@ -95,15 +95,19 @@ def to_bitext(my_predictable, master_table=None, lang=None):
 setup2approach = {
     'seg_self-guided_min': 'self-guided',
     'seg_self-guided_detailed': 'self-guided',
-    'seg_feature-based_min': 'feature-based',
-    'seg_feature-based_detailed': 'feature-based',
+    'seg_feature-based_min_ratio2.5': 'feature-based',
+    'seg_feature-based_detailed_ratio2.5': 'feature-based',
+    'seg_feature-based_min_std2': 'feature-based',
+    'seg_feature-based_detailed_std2': 'feature-based',
     'seg_translated_min': 'translated'
 }
 setup2mode = {
     'seg_self-guided_min': 'min',
     'seg_self-guided_detailed': 'detailed',
-    'seg_feature-based_min': 'min',
-    'seg_feature-based_detailed': 'detailed',
+    'seg_feature-based_min_ratio2.5': 'min',
+    'seg_feature-based_detailed_ratio2.5': 'detailed',
+    'seg_feature-based_min_std2': 'min',
+    'seg_feature-based_detailed_std2': 'detailed',
     'seg_translated_min': 'min'
 }
 
@@ -155,7 +159,10 @@ if __name__ == '__main__':
         print(len(translations))
 
         for i in setup2approach:
-            this_df = pd.read_csv(f'{args.megaouts}{args.model}/{args.thres_type}/{tlang}_{i}.tsv.gz', sep='\t',
+            if 'feature-based' in i:
+                i = f'{i}_{args.thres_type}'
+
+            this_df = pd.read_csv(f'{args.megaouts}{args.model}/{tlang}_{i}.tsv.gz', sep='\t',
                                   compression='gzip', usecols=['seg_id', 'lang', 'rewritten'])
 
             col_name = f'{setup2approach[i]}_{setup2mode[i]}'
