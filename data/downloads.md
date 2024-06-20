@@ -41,8 +41,8 @@ If you find this data useful, consider referencing the paper where it is describ
 author = {Kunilovskaya, Maria and Chowdhury, Koel Dutta and Przybyl, Heike and {Espa{\~{n}}a i Bonet}, Cristina and {Van Genabith}, Josef},
 title = {{Mitigating Translationese with GPT-4: Strategies and Performance}},
 booktitle = {Proceedings of the 25th Annual conference of the European Association for Machine Translation},
-month = {24-27 June},
-pages = {in print},
+month = {24--27 June},
+pages = {411--430},
 publisher = {Association for Computational Linguistics},
 address = {Sheffield, UK},
 year = {2024}
