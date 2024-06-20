@@ -1,7 +1,7 @@
 """
 14 Dec 2023
 
-python3 analysis/kde_plots.py --lose_bypassed
+python3 7_evaluation_and_analysis/kde_plots.py --n_feats 58 --thres_type ratio2.5
 
 """
 
@@ -147,8 +147,8 @@ def balance_orig_on_docs(_df0=None, tops_by_lang=None, lang=None):
     return smaller_lang
 
 
-def preprocess_originals(_df0=None, lang=None):
-    mini_df0 = balance_orig_on_docs(_df0=df0, tops_by_lang='classify/extremes/', lang=lang)
+def preprocess_originals(_df0=None, lang=None, extremes_dir=None):
+    mini_df0 = balance_orig_on_docs(_df0=df0, tops_by_lang=extremes_dir, lang=lang)
     # create unique seg_ids in the initial dataseet:
     mini_df0 = mini_df0.astype({'doc_id': 'str', 'seg_num': 'str'})
     mini_df0["seg_id"] = mini_df0[["doc_id", "seg_num"]].apply(lambda x: "-".join(x), axis=1)
@@ -176,27 +176,29 @@ class Logger(object):
         pass
 
 
-def make_dirs(outdir, logsto):
-    os.makedirs(outdir, exist_ok=True)
-    os.makedirs(logsto, exist_ok=True)
+def make_dirs(logsto, picsto, sub):
+    os.makedirs(f'{logsto}', exist_ok=True)
+    os.makedirs(f'{picsto}', exist_ok=True)
     script_name = sys.argv[0].split("/")[-1].split(".")[0]
-    log_file = f'{logsto}{script_name}.log'
+    log_file = f'{logsto}{sub}_{script_name}.log'
     sys.stdout = Logger(logfile=log_file)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--feats1', help="fns, labels, text, lemmas, feats and srp vals", default='data/feats_tabled/seg-450-1500.feats.tsv.gz')
-    parser.add_argument('--feats2', help='folder with feature tables', default='data/rewritten/curated/feats_tabled2/')
-    parser.add_argument('--lose_bypassed', action="store_true", help='Exclude short segs')
+    parser.add_argument('--rewritten_feats', default='data/rewritten/feats_tabled2/')
+    parser.add_argument('--extremes', default='2_classify1/extremes/', help='path to lists of contrastive ids')
+    parser.add_argument('--thres_type', choices=['ratio2.5', 'std2'], default='ratio2.5', required=True)
+    parser.add_argument('--initial_feats', help='feats in HT', default='data/feats_tabled/seg-450-1500.feats.tsv.gz')
+    # parser.add_argument('--lose_bypassed', action="store_true", help='Exclude short segs')
     parser.add_argument('--n_feats', type=int, default=58, choices=[15, 58])
-    parser.add_argument('--logs', default='logs/final_analysis/')
-    parser.add_argument('--pics', default='7_evaluation_and_analysis/pics/')
+    parser.add_argument('--logsto', default='logs/rewritten')
+    parser.add_argument('--picsto', default='7_evaluation_and_analysis/pics/')
     args = parser.parse_args()
 
     start = time.time()
 
-    make_dirs(args.pics, args.logsto)
+    make_dirs(args.logsto, args.picsto, sub=args.thres_type)
 
     print(f"\nRun date, UTC: {datetime.utcnow()}")
     print(f"Run settings: {sys.argv[0]} {' '.join(f'--{k} {v}' for k, v in vars(args).items())}")
@@ -226,27 +228,35 @@ if __name__ == "__main__":
 
     for lang in ['de', 'en']:
         print(f'{lang.upper()}')
-        df0 = pd.read_csv(args.feats1, sep='\t', compression='gzip')
-        initial_two = preprocess_originals(_df0=df0, lang=lang)
+        df0 = pd.read_csv(args.initial_feats, sep='\t', compression='gzip')
+        initial_two = preprocess_originals(_df0=df0, lang=lang, extremes_dir=args.extremes)
 
         print(f"Columns in 1.OGR vs HT (NO shorts!!) {initial_two.shape}: {initial_two.columns.tolist()}")
 
         for setup in ['self-guided_min', 'self-guided_detailed', 'translated_min',
                       'feature-based_min', 'feature-based_detailed']:
 
-            # gpt-4_temp0.7_feature-based_detailed_rewritten_feats.tsv.gz
-            df1 = pd.read_csv(f'{args.feats2}{setup}/gpt-4_temp0.7_{setup}_rewritten_feats.tsv.gz', sep='\t', compression='gzip')
+            if setup.startswith('feature-based_'):
+                with_thres = f"{setup}_{args.thres_type}"
+            else:
+                with_thres = setup
+            try:
+                df1 = pd.read_csv(
+                    f'{args.rewritten_feats}{args.thres_type}/gpt4_temp0.7_{with_thres}_rewritten_feats.tsv.gz',
+                    sep='\t', compression='gzip')
+            except FileNotFoundError:
+                continue
             rewritten = preprocess_rewritten_setup(_df0=df1, lang=lang)
             print(f"Columns in 2. classifier data {rewritten.shape}: {rewritten.columns.tolist()}")
 
             kde_data = pd.concat([initial_two, rewritten], axis=0)
             print(kde_data.shape)
-            if args.lose_bypassed:
-                lose_them = [i.strip() for i in
-                             open(f'_deliverables/cleaned_multiparallel/lose_shorts/{lang}/{setup}.txt',
-                                  'r').readlines()]
-                kde_data = kde_data[~kde_data['seg_id'].isin(lose_them)]
-                print(f'*** After losing {len(lose_them)} short:')
+            # if args.lose_bypassed:
+            #     lose_them = [i.strip() for i in
+            #                  open(f'_deliverables/cleaned_multiparallel/lose_shorts/{lang}/{setup}.txt',
+            #                       'r').readlines()]
+            #     kde_data = kde_data[~kde_data['seg_id'].isin(lose_them)]
+            #     print(f'*** After losing {len(lose_them)} short:')
             print(kde_data.shape)
 
             print(kde_data.columns.tolist())
@@ -299,7 +309,8 @@ if __name__ == "__main__":
                 sns.kdeplot(d[i], color=settings['cols'][idx], linewidth=2.5, linestyle=settings['lines'][idx], ax=ax)
                 colclass = mpatches.Patch(color=settings['cols'][idx], label=settings['names'][idx])
                 colored_items.append(colclass)
-            print(f'Sanity checks:\n\t Colors = 3: {len(colored_items) == 3}\n\t Lines == 3 or None: {type(lined_items)}')
+            print(
+                f'Sanity checks:\n\t Colors = 3: {len(colored_items) == 3}\n\t Lines == 3 or None: {type(lined_items)}')
             legend1 = plt.legend(handles=colored_items, fontsize=15, bbox_to_anchor=(1, 1), loc='best')
             plt.gca().add_artist(legend1)
 
@@ -314,8 +325,8 @@ if __name__ == "__main__":
 
             plt.xticks(fontsize=15)  # Adjust the font size of x-axis tick labels
             plt.yticks(fontsize=15)  # Adjust the font size of y-axis tick labels
-
-            save_name = f'{args.pics}kdeD{my_dim}_{lang}_{args.n_feats}feats_{setup.replace("-based", "-guided")}.png'
+            # {lang}_{args.level}_{setup}_{args.thres_type}
+            save_name = f'{args.picsto}kdeD{my_dim}_{lang}_{args.n_feats}feats_{setup}_{args.thres_type}.png'
             plt.savefig(save_name)
 
             plt.show()

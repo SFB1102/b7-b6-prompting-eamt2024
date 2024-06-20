@@ -8,6 +8,8 @@ data/conllu/
 data/raw_aligned/
 data/rewritten/
 data/feats_tabled/
+6_classify2/pics/
+7_evaluation_and_analysis/pics/
 
 
 # Byte-compiled / optimized / DLL files
