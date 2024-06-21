@@ -374,8 +374,11 @@ if __name__ == "__main__":
                 task_data = task_data.drop(['doc_id'], axis=1)
 
                 if args.lose_bypassed:
+                    # lose only shorts, keep copies!
                     lose_them = [i.strip() for i in
-                                 open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{lang}/{setup}.ids', 'r').readlines()]
+                                 open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{lang}/shorts_only_{setup}.ids', 'r').readlines()]
+                    # lose_them = [i.strip() for i in
+                    #              open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{lang}/{setup}.ids', 'r').readlines()]
                     task_data = task_data[~task_data['seg_id'].isin(lose_them)]
 
                 task_data = task_data.rename(columns={'seg_id': 'iid'})

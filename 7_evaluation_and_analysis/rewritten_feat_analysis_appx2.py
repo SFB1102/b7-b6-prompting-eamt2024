@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
             if args.lose_bypassed:
                 lose_them = [i.strip() for i in
-                             open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{tlang}/{setup}.ids',
+                             open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{tlang}/shorts_only_{setup}.ids',
                                   'r').readlines()]
                 this_df = this_df[~this_df['seg_id'].isin(lose_them)]
 

@@ -44,7 +44,7 @@ for thres_type in ['ratio2.5', 'std2']:
 
             collector[setup].append(f'{(copies)/long_ht.shape[0] *100:.2f}')
 
-            lose_short_ids.extend(lose_copies_ids)
+            # lose_short_ids.extend(lose_copies_ids)  # we want to exclude only shorts, not copies to maintain comparability with HT
 
             save_filtered_mode_tables_to = f'data/rewritten/curated/no_shorts_and_copies/{thres_type}/{tlang}/'
             os.makedirs(save_filtered_mode_tables_to, exist_ok=True)
@@ -52,7 +52,7 @@ for thres_type in ['ratio2.5', 'std2']:
 
             save_unaffected_segids_to = f'data/rewritten/curated/lose_segids/{thres_type}/{tlang}/'
             os.makedirs(save_unaffected_segids_to, exist_ok=True)
-            with open(f'{save_unaffected_segids_to}{setup}.ids', 'w') as outf:
+            with open(f'{save_unaffected_segids_to}shorts_only_{setup}.ids', 'w') as outf:
                 for i in lose_short_ids:
                     outf.write(i + '\n')
 

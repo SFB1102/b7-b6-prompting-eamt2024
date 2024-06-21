@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
             if args.lose_bypassed:
                 lose_them = [i.strip() for i in
-                             open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{tlang}/{setup}.ids',
+                             open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{tlang}/shorts_only_{setup}.ids',
                                   'r').readlines()]
                 kde_data = kde_data[~kde_data['seg_id'].isin(lose_them)]
                 print(f'*** After losing {len(lose_them)} short: {kde_data.shape}\n')
