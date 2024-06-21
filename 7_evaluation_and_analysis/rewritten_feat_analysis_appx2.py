@@ -7,7 +7,7 @@ names of the approaches self-guided (modes: min, detailed), feature-based (modes
 
 on all features (maybe make a column if the feature is among the best) once on HT (in analysis res)
 
-python3 7_evaluation_and_analysis/rewritten_feat_analysis_appx2.py --lose_bypassed
+python3 7_evaluation_and_analysis/rewritten_feat_analysis_appx2.py --lose_bypassed --thres_type ratio2.5
 
 """
 
@@ -16,7 +16,7 @@ import os
 import argparse
 import time
 from datetime import datetime
-from scipy.stats import mannwhitneyu, shapiro, bartlett, wilcoxon
+from scipy.stats import mannwhitneyu
 from scipy.stats.mstats import spearmanr
 import numpy as np
 
@@ -26,8 +26,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_validate
 from collections import defaultdict
 
-import seaborn as sns
-import matplotlib.pyplot as plt
 import pandas as pd
 
 
@@ -39,8 +37,6 @@ def add_weights(weights_dir=None, tlang=None, lang_df=None):
         if i.startswith('allfeats'):
             lang_svm_df = pd.read_csv(f'{args.svm_weights_dir}{i}', sep='\t')
             print(i)
-            # print(lang_svm_df.tail())
-            # input()
 
             # Round the values in columns to 3 decimal places
             lang_svm_df = lang_svm_df.drop(['weight'], axis=1)
@@ -58,11 +54,7 @@ def add_weights(weights_dir=None, tlang=None, lang_df=None):
 
             lang_svm_df = lang_svm_df.set_index('feature')
             lang_svm_df = lang_svm_df.rename(columns={'abs_weight': 'opt_weights'})
-        #
-        # if 'relcl' in lang_svm_df.index.tolist():
-        #     print(i)
-        #     print('GOTCHA')
-        #     exit()
+
         new_cols.append(lang_svm_df)
 
     lang_df_updated = pd.concat([lang_df] + new_cols, axis=1)  # adding columns abs_weights and weights
@@ -110,9 +102,6 @@ def rewrit_univariate(feature_lst=None, feat_rewr=None, feat_org=None, col_name=
     print(feat_org.shape)
     print(feat_rewr.shape)
 
-    # print(feature_lst)
-    # print(feat_rewr.columns.tolist())
-
     for i in feature_lst:
         res_collector['feature'].append(i)
         rewr_lst = feat_rewr[i].tolist()
@@ -152,10 +141,7 @@ def reduce_to_extreme_docs(df0=None, tops_by_lang=None):
     two_langs = []
     for my_lang in ['de', 'en']:
         fh = [f for f in os.listdir(tops_by_lang) if f.startswith(f'{my_lang}_doc_')]
-        # print(f'{tops_by_lang}{fh[0]}')
         my_extremes_doc_ids = [i.strip() for i in open(f'{tops_by_lang}{fh[0]}', 'r').readlines()]
-        # print(my_extremes_doc_ids[-5:])
-        # print(df0.head(3))
         try:
             smaller_lang = df0[df0['doc_id'].isin(my_extremes_doc_ids)]
         except KeyError:
@@ -246,7 +232,6 @@ if __name__ == '__main__':
                         help='Do you want to excluse segs that did not make it to re-writing pipeline? classify/bypassed/{lang}_...txt')
     # parser.add_argument('--best_selection', action='store_true',
     #                     help='Do you want to save a smaller df with the best features only?')
-    # parser.add_argument('--svm_weights_dir', default='classify/res/weights/')
     parser.add_argument('--outdir', default='7_evaluation_and_analysis/res/')
     parser.add_argument('--logsto', default=f'logs/rewritten/')
     args = parser.parse_args()
@@ -309,11 +294,11 @@ if __name__ == '__main__':
 
         this_lang_org = feats_europ[(feats_europ.lang == tlang) & (feats_europ.ttype == 'source')]  # expected
 
-        for i in setup2approach:
-            if i.startswith('feature-based_'):
-                with_thres = f"{i}_{args.thres_type}"
+        for setup in setup2approach:
+            if setup.startswith('feature-based_'):
+                with_thres = f"{setup}_{args.thres_type}"
             else:
-                with_thres = i
+                with_thres = setup
             try:
                 df = pd.read_csv(f'{args.rewritten_feats}{args.thres_type}/gpt4_temp0.7_{with_thres}_rewritten_feats.tsv.gz', sep='\t',
                                  compression='gzip')
@@ -328,19 +313,17 @@ if __name__ == '__main__':
             this_df = this_df.astype({'seg_id': 'str'})
             this_df['doc_id'] = this_df['seg_id'].apply(lambda x: str(x).split(':')[0])
 
-            # if args.lose_bypassed:
-            #     lose_them = [i.strip() for i in
-            #                  open(f'_deliverables/cleaned_multiparallel/lose_shorts/{tlang}/{i}.txt',
-            #                       'r').readlines()]
-            #     this_df = this_df[~this_df['seg_id'].isin(lose_them)]
+            if args.lose_bypassed:
+                lose_them = [i.strip() for i in
+                             open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{tlang}/{setup}.ids',
+                                  'r').readlines()]
+                this_df = this_df[~this_df['seg_id'].isin(lose_them)]
 
             # df with one column with arrows named after the approach_mode indexed on feature
             var_df = rewrit_univariate(feature_lst=feats, feat_rewr=this_df,
-                                       feat_org=this_lang_org, col_name=f'{setup2approach[i]}_{setup2mode[i]}')
+                                       feat_org=this_lang_org, col_name=f'{setup2approach[setup]}_{setup2mode[setup]}')
 
             var_df = var_df.set_index('feature')
-
-            # print(var_df.head())
 
             this_lang_varieties_dfs.append(var_df)
 
@@ -350,7 +333,6 @@ if __name__ == '__main__':
         new_row = pd.DataFrame({col: [tlang] for col in this_lang_ol.columns}, index=[''])
         # Concatenate the new row DataFrame with the existing DataFrame
         lang_res_df = pd.concat([new_row, this_lang_ol])
-        # print(lang_res_df.head())
 
         my_lang_dfs.append(lang_res_df)
 

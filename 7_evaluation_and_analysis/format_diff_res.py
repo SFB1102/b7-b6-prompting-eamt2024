@@ -1,4 +1,5 @@
 """
+UPD 20 June 2024
 9 Mar
 get a table with differences between the baseline and the results on rewritten
 
@@ -15,6 +16,7 @@ def juggle_tables(base=None, test=None):
     features_collector = defaultdict(list)
     translated_collector = defaultdict(list)
     # explicit control for the order
+
     for my_setup in ['translated_min', 'self-guided_min', 'self-guided_detailed',
                      'feature-based_min', 'feature-based_detailed']:
 
@@ -80,7 +82,9 @@ def juggle_tables(base=None, test=None):
     return my_vals, header
 
 
-for thres_type in ['std2', 'ratio2.5']:
+# self-guided modes should be the same for the two thresholds but the multiparallel tables were curated separately
+# which led to jitters in results (inc number of segments). I trust the std2 results for self-guided modes more.
+for thres_type in ['ratio2.5', 'std2']:
     header = None
     final_tab_data = []
     for l in ['de', 'en']:

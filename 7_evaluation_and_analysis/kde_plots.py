@@ -1,30 +1,23 @@
 """
 14 Dec 2023
 
-python3 7_evaluation_and_analysis/kde_plots.py --n_feats 58 --thres_type ratio2.5
-
+python3 7_evaluation_and_analysis/kde_plots.py --n_feats 58 --thres_type ratio2.5 --lose_bypassed
 """
 
-import numpy as np
 import os
 import sys
 import pandas as pd
 import argparse
 import time
-import random
 from datetime import datetime
-from collections import Counter
 from collections import defaultdict
 
-from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import confusion_matrix
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
-from sklearn.utils import shuffle
 
 
 def pca_d1_density(x, y, dim=None, save_name=None, settings=None, sns=None):
@@ -88,11 +81,6 @@ def pca_d1_density(x, y, dim=None, save_name=None, settings=None, sns=None):
     ax.set_ylabel('Density', fontsize=15)
 
     plt.xlim([-5, 6])
-    # plt.yticks(fontsize=12)
-    # plt.xticks(fontsize=12)
-
-    # hide tick and tick label of the big axis
-    # plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
 
     plt.grid(color='darkgrey', linestyle='--', linewidth=0.5, alpha=0.5)
 
@@ -108,12 +96,6 @@ def pca_d1_density(x, y, dim=None, save_name=None, settings=None, sns=None):
 
 def preprocess_rewritten_setup(_df0=None, lang=None):
     _df0 = _df0[_df0['lang'] == lang]
-    # print(f"\nColumns in rewritten {_df0.shape}: {_df0.columns.tolist()}")
-    #
-    # if 'mean_sent_length' in _df0.columns.tolist():
-    #     print('*** Renaming a column that was not consistently names earlier, fixed for the future! ***')
-    #     df1 = _df0.rename(columns={'mean_sent_length': 'mean_sent_wc'})
-    #     exit()
 
     # this is df with features for rewritten segments
     _df0 = _df0.dropna()
@@ -123,7 +105,7 @@ def preprocess_rewritten_setup(_df0=None, lang=None):
     total_nan_count = _df0.isna().sum().sum()
     print(f'Counts of NaN in rewritten (empty segs are filtered out at parsing): {_df0["rewritten"].isna().sum()}')
     if total_nan_count:
-        # # Print the number of NaN values for each column
+        # Print the number of NaN values for each column
         print("\nColumns with NaN values:")
         print(nan_counts_filtered)
         print(f'Total NaNs in the df: {total_nan_count}\n')
@@ -190,7 +172,7 @@ if __name__ == "__main__":
     parser.add_argument('--extremes', default='2_classify1/extremes/', help='path to lists of contrastive ids')
     parser.add_argument('--thres_type', choices=['ratio2.5', 'std2'], default='ratio2.5', required=True)
     parser.add_argument('--initial_feats', help='feats in HT', default='data/feats_tabled/seg-450-1500.feats.tsv.gz')
-    # parser.add_argument('--lose_bypassed', action="store_true", help='Exclude short segs')
+    parser.add_argument('--lose_bypassed', action="store_true", help='Exclude short segs')
     parser.add_argument('--n_feats', type=int, default=58, choices=[15, 58])
     parser.add_argument('--logsto', default='logs/rewritten')
     parser.add_argument('--picsto', default='7_evaluation_and_analysis/pics/')
@@ -226,10 +208,10 @@ if __name__ == "__main__":
     for k, vs in zip(keys, vals):
         settings[k] = vs
 
-    for lang in ['de', 'en']:
-        print(f'{lang.upper()}')
+    for tlang in ['de', 'en']:
+        print(f'{tlang.upper()}')
         df0 = pd.read_csv(args.initial_feats, sep='\t', compression='gzip')
-        initial_two = preprocess_originals(_df0=df0, lang=lang, extremes_dir=args.extremes)
+        initial_two = preprocess_originals(_df0=df0, lang=tlang, extremes_dir=args.extremes)
 
         print(f"Columns in 1.OGR vs HT (NO shorts!!) {initial_two.shape}: {initial_two.columns.tolist()}")
 
@@ -246,18 +228,18 @@ if __name__ == "__main__":
                     sep='\t', compression='gzip')
             except FileNotFoundError:
                 continue
-            rewritten = preprocess_rewritten_setup(_df0=df1, lang=lang)
+            rewritten = preprocess_rewritten_setup(_df0=df1, lang=tlang)
             print(f"Columns in 2. classifier data {rewritten.shape}: {rewritten.columns.tolist()}")
 
             kde_data = pd.concat([initial_two, rewritten], axis=0)
             print(kde_data.shape)
-            # if args.lose_bypassed:
-            #     lose_them = [i.strip() for i in
-            #                  open(f'_deliverables/cleaned_multiparallel/lose_shorts/{lang}/{setup}.txt',
-            #                       'r').readlines()]
-            #     kde_data = kde_data[~kde_data['seg_id'].isin(lose_them)]
-            #     print(f'*** After losing {len(lose_them)} short:')
-            print(kde_data.shape)
+
+            if args.lose_bypassed:
+                lose_them = [i.strip() for i in
+                             open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{tlang}/{setup}.ids',
+                                  'r').readlines()]
+                kde_data = kde_data[~kde_data['seg_id'].isin(lose_them)]
+                print(f'*** After losing {len(lose_them)} short: {kde_data.shape}\n')
 
             print(kde_data.columns.tolist())
             my_dim = 2
@@ -271,7 +253,7 @@ if __name__ == "__main__":
                 this_df = kde_data[all_feats]
             else:
                 print('Using top features')
-                these_feats = feat_dict[lang]['seg']
+                these_feats = feat_dict[tlang]['seg']
                 this_df = kde_data[these_feats]
             print(this_df.shape)
             X = this_df.values
@@ -291,7 +273,6 @@ if __name__ == "__main__":
             sns.set_context('paper')
             # Set the default font properties
             plt.rcParams['font.family'] = 'sans-serif'
-            # plt.rcParams['font.sans-serif'] = ['Roboto']  # Change 'Arial' to any desired font
             plt.rcParams['font.size'] = 17
             fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))  # 4:3 ratio
 
@@ -318,15 +299,14 @@ if __name__ == "__main__":
             ax.set_ylabel('Density', fontsize=16)
 
             plt.grid(color='darkgrey', linestyle='--', linewidth=0.5, alpha=0.5)
-            if lang == 'de':
+            if tlang == 'de':
                 plt.title(f'German: {setup.replace("-based", "-guided")}', ha='center', fontsize=17)
             else:
                 plt.title(f'English: {setup}', ha='center', fontsize=17)
 
             plt.xticks(fontsize=15)  # Adjust the font size of x-axis tick labels
-            plt.yticks(fontsize=15)  # Adjust the font size of y-axis tick labels
-            # {lang}_{args.level}_{setup}_{args.thres_type}
-            save_name = f'{args.picsto}kdeD{my_dim}_{lang}_{args.n_feats}feats_{setup}_{args.thres_type}.png'
+            plt.yticks(fontsize=15)
+            save_name = f'{args.picsto}kdeD{my_dim}_{tlang}_{args.n_feats}feats_{setup}_{args.thres_type}.png'
             plt.savefig(save_name)
 
             plt.show()

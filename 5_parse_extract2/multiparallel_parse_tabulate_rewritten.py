@@ -3,21 +3,20 @@ UPD 12 Mar
 replace the input to parser with the manually curated multiparallel document!
 
 UPD 22 Nov 2023 (08 Oct 2023)
-the script expects final mega tables with a complete re-written column extract/tabled/rewritten/
+the script expects final mega tables with a rewritten column
 
 the script outputs tables for manual analysis (with interactive_analysis.py) and feature-tables for classifier2.py
 + general stats for the entire re-written corpus to prompting/chuncked_output/gpt-3.5-turbo/<temp0.*>/<lang>_<setup>/*.new_chunk_1.tsv
-
 * parse segments on the fly, one-by-one, without saving conllu
-* calculate all 60 features from the conllu-in-memory and write to a table to be passed to the classifier
+* calculate all 58 features from the conllu-in-memory and write to a table to be passed to the classifier
 
-# requires a separate run for temperature-setup combination (can be iterated from a shell script)
-python3 extract/parse_tabulate_rewritten.py --temp 0.7 --setup lazy
-python3 extract/parse_tabulate_rewritten.py --temp 0.7 --setup min_triad_vratio2
 
 # 20 June 2024
 python3 5_parse_extract2/multiparallel_parse_tabulate_rewritten.py --setup self-guided_detailed --thres_type ratio2.5
 
+# self-guided modes are supposed to be the same for various thresholds, but manual curation of the full multiparallel table was done separately,
+hence there are jitters in the results
+python3 5_parse_extract2/multiparallel_parse_tabulate_rewritten.py --setup self-guided_detailed --thres_type std2
 """
 
 import os
@@ -42,19 +41,6 @@ from feats import ud_freqs, pasttense, finites, preps, infinitives, nominals, ad
 from feats import verb_n_obj, main_verb_nsubj_noun, obl_obj, advmod_verb, topical_vorfeld, expected_nachfeld
 from feats import mean_sent_length, advmod_no_negation
 
-
-# def parse_segment(preprocessed_string, my_lang, device=None):  # pass cuda if available
-#     # Initialize Stanza pipeline
-#     if device == 'cuda':
-#         my_parser = stanza.Pipeline(my_lang, processors='tokenize,mwt,pos,lemma,depparse', verbose=False,
-#                                     tokenize_pretokenized=False,
-#                                     download_method=DownloadMethod.REUSE_RESOURCES,
-#                                     use_gpu=True)
-#     else:
-#         my_parser = stanza.Pipeline(my_lang, processors='tokenize,mwt,pos,lemma,depparse', verbose=False,
-#                                     tokenize_pretokenized=False,
-#                                     download_method=DownloadMethod.REUSE_RESOURCES,
-#                                     use_gpu=False)
 
 def parse_segment(preprocessed_string, my_parser=None):
     parsed_seg = my_parser(preprocessed_string)
@@ -122,7 +108,6 @@ def get_listed_sents_for_segment(seg_in=None):
     starts = w_ids.count(1)
     split_list_ids = [i - 1 for i, w in enumerate(seg_in) if w[0] == 1 and starts > 1]
     if split_list_ids:
-        # print(split_list_ids[1:])
         # Split the list based on the last indices
         listed_sents_out = split_list_by_last_index(seg_in, split_list_ids[1:])
     else:
@@ -262,8 +247,6 @@ def get_re_thres_tuples(feats=None, vals_from=None, norm_these=None, norm_by=Non
     tups_listed = []
     for feat_tup in feats:
         try:
-            # print(feat_tup)
-            # print(feat_tup[0], vals_from[feat_tup[0]][-1])
             feat_val = vals_from[feat_tup[0]][-1]
         except IndexError:
             print(feat_tup[0])
@@ -278,16 +261,6 @@ def get_re_thres_tuples(feats=None, vals_from=None, norm_these=None, norm_by=Non
         tups_listed.append((feat_tup[0], feat_tup[1], feat_tup[2], feat_tup[3], feat_val))
 
     return tups_listed
-
-
-# def remove_dots(segs=None):
-#     _segs = [seg.replace('Euh ', '').replace('Hum ', '') for seg in segs]
-#     _segs = [re.sub(r" hm\.", r".", line) for line in _segs]
-#     _segs = [re.sub(r" hum\.", r".", line) for line in _segs]
-#     _segs = [re.sub(r" euh\.", r".", line) for line in _segs]
-#     _segs = [re.sub(r"\. ([a-zäöü])", r" \1", line) for line in _segs]  # this is the only one applicable to europ, right?
-#
-#     return _segs
 
 
 class Logger(object):
@@ -305,33 +278,6 @@ class Logger(object):
 
     def flush(self):
         pass
-
-
-def estimate_flops(cuda_device):
-    props = torch.cuda.get_device_properties(cuda_device)
-    cores = props.multi_processor_count * props.multi_processor_count
-    # clock_rate = props.clock_rate / 1000  # KHz to MHz
-    flops_per_cycle = 2  # Assuming 2 FLOPs per cycle for NVIDIA GPUs
-    return cores * flops_per_cycle
-
-
-def get_device_info():
-    num_gpus = torch.cuda.device_count()
-
-    if num_gpus == 0:
-        print("No GPUs available.")
-    else:
-        print(f"Number of GPUs available: {num_gpus}")
-        print("GPU Information:")
-
-        for i in range(int(num_gpus)):
-            print(i)
-            device_name = torch.cuda.get_device_name(i)
-            # gpu_capability = torch.cuda.get_device_capability(device_id)
-            # flops = torch.cuda.get_device_properties(device_id).total_flops
-            # print(f"GPU {i + 1}: {gpu_name}, Capability: {gpu_capability}, FLOPs: {flops:.2e}")
-            flops = estimate_flops(i)
-            print(f"Estimated FLOPS on GPU {i} ({device_name}): {flops:.2f} GFLOPS")  # Print estimated FLOPS
 
 
 # Function to apply the regex substitution
@@ -387,12 +333,11 @@ def make_dirs(outdir, logsto, statsto, sub):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-
-    # seg_id index lang src_raw tgt_raw rewritten prompt  thresholds (e.g. [('iobj', 1.0, 0.135, 'remove'), ('nnargs', 1.0, 0.363, 'remove')])
+    # seg_id index lang src_raw tgt_raw rewritten prompt  thresholds (e.g. [('iobj', 1.0, 0.135, 'remove')])
     parser.add_argument('--megaout', help='this is the GPT outputs for each setup with thresholds',
                         default='4_prompting/output/gpt-4/')  # de_seg_feature-based_detailed_ratio2.5.tsv.gz
-    # manually curated multiparallel table
-    parser.add_argument('--multiparallel', help='', default='data/rewritten/curated/')  # ratio2.5_de_7aligned_2056segs.tsv
+    # manually curated multiparallel table, e.g. ratio2.5_de_7aligned_2056segs.tsv
+    parser.add_argument('--multiparallel', help='', default='data/rewritten/curated/')
     parser.add_argument('--setup', choices=['translated_min', 'self-guided_min', 'self-guided_detailed',
                                             'feature-based_min', 'feature-based_detailed'],
                         help='for path re-construction', required=True)
@@ -489,8 +434,6 @@ if __name__ == "__main__":
                 exit()
             else:
                 # preprocess document following the pre-parsing procedures in /home/maria/main/proj/b7/add_meta_run_stanza.py
-                # this is the only command from remove_dots function that applies to europ
-                # seg = re.sub(r"\. ([a-zäöü])", r" \1", seg)
                 seg = seg.strip().strip('"')
 
                 # segment can have more than one sentence

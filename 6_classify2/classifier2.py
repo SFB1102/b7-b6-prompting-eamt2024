@@ -4,8 +4,10 @@ this expects a table with features for the rewritten translations and
 the original data/feats_tabled/seg-450-1500.feats.tsv.gz + lists of contrastive non-translated docs from 2_classify1/extremes/
 
 17 Sept 2023
-#--lose_bypassed
-python3 6_classify2/classifier2.py --thres_type ratio2.5 --level seg --nbest 0 --nbest_by RFECV --verbosity 0
+--lose_bypassed is needed to reproduce reported results: It excludes short (<8 tokens) and copied-over segs from subsequent analysis
+data/rewritten/curated/no_shorts_and_copies/ folder has filtered aligned outputs by lang, thres_type and mode (20 tsv)
+
+python3 6_classify2/classifier2.py --thres_type ratio2.5 --level seg --nbest 0 --nbest_by RFECV --verbosity 0 --lose_bypassed
 """
 
 import numpy as np
@@ -69,121 +71,14 @@ def balance_orig_on_docs(_df0=None, how=None, tops_by_lang=None, size=None, lang
         my100orig = random.sample(origs, size)
 
         smaller_lang = _df0_lang[_df0_lang['doc_id'].isin(my100orig)]
-        #     two_langs.append(smaller_lang)
-        # smaller_df = pd.concat(two_langs, axis=0)
         print(smaller_lang.shape)
     else:
-        # two_langs = []
-        # for my_lang in ['de', 'en']:
         fh = [f for f in os.listdir(tops_by_lang) if f.startswith(f'{lang}_doc_')]
         my_extremes_doc_ids = [i.strip() for i in open(f'{tops_by_lang}{fh[0]}', 'r').readlines()]
         # this includes ORG_WR_EN_DE_004910 and TR_DE_EN_004321 !!!
         smaller_lang = _df0_lang[_df0_lang['doc_id'].isin(my_extremes_doc_ids)]
-        # print(len(set(smaller_lang.doc_id.tolist())))
-        # print(list(set(smaller_lang.doc_id.tolist()))[:3])
-        # exit()
-        #     two_langs.append(smaller_lang)
-        # smaller_df = pd.concat(two_langs, axis=0)
 
     return smaller_lang
-
-
-# best_class_feats should be of size: features/2
-# def plot_weighted_scores(x, y, feature_names=None, colors=None, saveresto=None, savepicsto=None,
-#                          seed=None, run=None, verbose=None):
-#     # class_indicators_names = {k: [] for k in set(y)}
-#     # class_indicators_coef = {k: [] for k in set(y)}
-#
-#     # shuffle for estimating weights on entire data, without cv
-#     X_shuffled, y_shuffled, = shuffle(x, y, random_state=seed)
-#
-#     clf = SVC(C=1.0, kernel='linear', random_state=seed, class_weight='balanced')
-#     clf.fit(X_shuffled, y_shuffled)
-#
-#     binary = clf.classes_
-#     weights_df = pd.DataFrame(zip(feature_names, abs(clf.coef_[0]), clf.coef_[0]),
-#                               columns=["feature", "abs_weight", "weight"]).sort_values("abs_weight",
-#                                                                                        ascending=False).reset_index(
-#         drop=True)
-#     # print(weights_df.head())
-#     # I need weights for all and for optimal feature sets
-#     if weights_df.shape[0] == 60:
-#         weights_df.to_csv(f'{saveresto}allfeats_{run}_{weights_df.shape[0]}feats.tsv', sep='\t', index=False)
-#     elif 10 < weights_df.shape[0] < 60:
-#         weights_df.to_csv(f'{saveresto}optfeats_{run}_{weights_df.shape[0]}feats.tsv', sep='\t', index=False)
-#     else:
-#         pass
-#
-#     # boxplots: classes separation
-#     scores = np.dot(x, clf.coef_.T)  # the result of multiplying a matrix by a vector is a vector!
-#
-#     b0 = np.array(y) == binary[0]  # boolean or "mask" index arrays
-#     b1 = np.array(y) == binary[1]
-#     class0_scores = scores[b0]
-#     class1_scores = scores[b1]
-#
-#     print(f'Number of instances in class0 ({binary[0]}): {class0_scores.shape[0]}, '
-#           f'class1 ({binary[1]}): {class1_scores.shape[0]}')
-#
-#     color0 = colors[binary[0]]
-#     color1 = colors[binary[1]]
-#
-#     if np.mean(class0_scores) < 0:
-#         neg_class_col = color0
-#         neg_class_name = binary[0]
-#         print(f'Class0 ({neg_class_name}) has negative average score (value*weight): {np.mean(class0_scores):.3f}')
-#     else:
-#         pos_class_col = color0
-#         pos_class_name = binary[0]
-#         print(f'Class0 ({pos_class_name}) has positive average score (value*weight): {np.mean(class0_scores):.3f}')
-#
-#     if np.mean(class1_scores) < 0:
-#         neg_class_col = color1
-#         neg_class_name = binary[1]
-#         print(f'Class1 ({neg_class_name}) has negative average: {np.mean(class1_scores):.3f}')
-#     else:
-#         pos_class_col = color1
-#         pos_class_name = binary[1]
-#         print(f'Class1 ({pos_class_name}) has positive average: {np.mean(class1_scores):.3f}')
-#
-#     # bar charts: features typical for each class, based on the negative or positive location of the boxplot?
-#     # print(coefs)
-#     feats_per_class = int(len(feature_names) / 2)
-#     top_positive_coefficients = np.argsort(clf.coef_[0])[-feats_per_class:]
-#     top_negative_coefficients = np.argsort(clf.coef_[0])[:feats_per_class]  # [::-1]
-#
-#     top_coefficients = np.hstack([top_negative_coefficients, top_positive_coefficients])
-#
-#     feature_names = np.array(feature_names)
-#
-#     plt.figure(figsize=(12, 9))
-#
-#     colors_ = [neg_class_col if c < 0 else pos_class_col for c in clf.coef_[0][top_coefficients]]
-#
-#     plt.bar(np.arange(2 * feats_per_class), clf.coef_[0][top_coefficients], color=colors_)
-#     plt.xticks(np.arange(2 * feats_per_class), feature_names[top_coefficients], rotation=60, ha='right')
-#
-#     # creating a proxy artist specifically for adding to the legend
-#     labels = [i for i in list(colors.keys())]
-#     my_map = {'source': 'original', 'rewritten': 'rewritten'}
-#     true_labels = [my_map[i] for i in labels]
-#     handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
-#     plt.legend(handles, true_labels)
-#
-#     plt.grid(color='darkgrey', linestyle='--', linewidth=0.3, alpha=0.5)
-#
-#     plt.savefig(f'{savepicsto}{run}-{len(feature_names)}feats.png')
-#     if verbose > 0:
-#         plt.show()
-#
-#         # features weighted to indicate each class
-#         cat_keyed_feats = defaultdict(list)
-#         for c, f in zip(colors_, feature_names[top_coefficients]):
-#             cat = list(colors.keys())[list(colors.values()).index(c)]
-#             cat_keyed_feats[cat].append(f)
-#
-#         for k, v in cat_keyed_feats.items():
-#             print(k, len(v), v)
 
 
 def pca_this_lang(x=None, y=None, fns=None, save_name=None, lang=None, verbose=None):
@@ -231,7 +126,6 @@ def pca_this_lang(x=None, y=None, fns=None, save_name=None, lang=None, verbose=N
                                      va='bottom')
                 if lang == 'de':
                     if ('source' in cat or 'rewritten' in cat) and x[i][1] > 10:
-                        # print(fns[i])
                         plt.annotate(fns[i],
                                      fontsize=FONTSIZE,
                                      color=COLOR,  # this is the color of the text, not of the datapoint
@@ -259,8 +153,6 @@ def pca_this_lang(x=None, y=None, fns=None, save_name=None, lang=None, verbose=N
 
     ax.set_xlabel('PCA D1 values', fontsize=14)
     ax.set_ylabel('PCA D2 values', fontsize=14)
-    # plt.title(f'based on PCA transform of {vect.upper()} representation', ha='center', fontsize=14)
-    # plt.title(f'PCA transform of {vect.upper()} representation', ha='center', fontsize=14)
 
     string = f'Variance explained on D1: {pca.explained_variance_ratio_[0]:.2f}, D2: {pca.explained_variance_ratio_[1]:.2f}'
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
@@ -289,11 +181,6 @@ def get_preselect_vals(training_set, category='ttype', featnames=None, scaling=N
         # to meet the assumption that all features are centered around 0 and have variance in the same order
         # each value will have the sample mean subtracted, and then divided by the StD of the whole dataset
         sc = StandardScaler()
-        # Reshape your data either using array.reshape(-1, 1) if your data has a single feature
-        # training_set = training_set[my_single]
-        # print(training_set.head())
-        #
-        # exit()
         training_set[featnames] = sc.fit_transform(training_set[featnames])
 
     x0 = training_set[featnames].values
@@ -333,10 +220,10 @@ def preprocess_originals(_df0=None, lang=None, level=None, extremes_dir=None):
     else:
         mini_df0 = balance_orig_on_docs(_df0=df0, how='extreme', tops_by_lang=extremes_dir, size=None,
                                         lang=lang)
-    # create unique seg_ids in the initial dataseet:
+    # create unique seg_ids in the initial dataset:
     mini_df0 = mini_df0.astype({'doc_id': 'str', 'seg_num': 'str'})
     mini_df0["seg_id"] = mini_df0[["doc_id", "seg_num"]].apply(lambda x: ":".join(x), axis=1)
-    # are there segments shorter than 8
+    # are there segments shorter than 8?
     # exclude short sentences:
     mini_df0 = mini_df0[mini_df0['raw'].apply(lambda x: len(str(x).split()) > 8)]
     meta = ['seg_num', 'corpus', 'direction', 'wc_lemma', 'raw', 'raw_tok', 'sents']
@@ -359,7 +246,7 @@ def preprocess_rewritten_setup(_df0=None, lang=None):
     print(
         f'Counts of NaN in rewritten (empty segs are filtered out at parsing): {_df0["rewritten"].isna().sum()}')
     if total_nan_count:
-        # # Print the number of NaN values for each column
+        # Print the number of NaN values for each column
         print("\nColumns with NaN values:")
         print(nan_counts_filtered)
         print(f'Total NaNs in the df: {total_nan_count}\n')
@@ -373,9 +260,6 @@ def preprocess_rewritten_setup(_df0=None, lang=None):
     if not noise1.empty or not noise2.empty:
         num_err = noise1.shape[0] + noise2.shape[0]
     else:
-        # print(noise1)
-        # print(noise2)
-        # exit()
         num_err = None
 
     _df0.insert(2, 'ttype', 'rewritten')  # add ttype column = new label
@@ -485,15 +369,12 @@ if __name__ == "__main__":
             else:  # assume seg: the data is already reduced to 100 nontra and 100 rewritten (for the most_translated selection)
                 task_data = task_data.drop(['doc_id'], axis=1)
 
-                # not needed if working from curated data
-                # if args.lose_bypassed:
-                #     lose_them = [i.strip() for i in
-                #                  open(f'_deliverables/cleaned_multiparallel/lose_shorts/{lang}/{setup}.txt', 'r').readlines()]
-                #     task_data = task_data[~task_data['seg_id'].isin(lose_them)]
-                task_data = task_data.rename(columns={'seg_id': 'iid'})
+                if args.lose_bypassed:
+                    lose_them = [i.strip() for i in
+                                 open(f'data/rewritten/curated/lose_segids/{args.thres_type}/{lang}/{setup}.ids', 'r').readlines()]
+                    task_data = task_data[~task_data['seg_id'].isin(lose_them)]
 
-                # print(task_data.head())
-                # print(task_data.shape)  # doc-level: en 143 nobs, de (200, 61); seg-level (8452, 63)
+                task_data = task_data.rename(columns={'seg_id': 'iid'})
 
             # explicitly drop muted features, I am not sure how they creep back in
             try:

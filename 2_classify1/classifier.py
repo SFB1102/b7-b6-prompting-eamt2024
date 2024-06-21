@@ -223,7 +223,7 @@ if __name__ == "__main__":
             else:  # assume seg and reduce data to classify to 10K instances in total
                 # seg_cap = 5000  # in each of the category
                 # df = reduce_data_by_lang_and_ttype(df0=df, cap=seg_cap, seed=args.rand)
-                df = reduce_to_extreme_docs(df0=df, tops_by_lang='classify/extremes/')
+                df = reduce_to_extreme_docs(df0=df, tops_by_lang='2_classify1/extremes/')
                 df = df.drop(['doc_id', 'raw'], axis=1)
             print(df.head())
 

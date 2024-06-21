@@ -1,4 +1,4 @@
-'''
+"""
 01 October 2023
 
 test translationese hypothesis and produce cross-linguistic examples for translationese indicators
@@ -7,7 +7,7 @@ python3 humeval/interactive_analysis.py --temp 0.7 --setup seg_detailed_triple_v
 detailed German mystery
 python3 humeval/interactive_analysis.py --temp 0.7 --setup seg_self-guided_detailed --sample_size 25 --model gpt-4 --who heike
 python3 humeval/interactive_analysis.py --temp 0.7 --setup seg_translated_min --sample_size 25 --model gpt-4 --who heike
-'''
+"""
 import math
 import re
 
