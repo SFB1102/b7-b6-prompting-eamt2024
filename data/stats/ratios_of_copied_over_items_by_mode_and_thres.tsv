@@ -1,0 +1,5 @@
+thres_type	lang	translated_min	self-guided_min	self-guided_detailed	feature-based_min	feature-based_detailed
+ratio2.5	de	7.92	5.32	0.78	9.22	7.87
+ratio2.5	en	0.05	0.05	0.16	28.20	29.87
+std2	de	7.97	4.97	0.78	16.71	16.66
+std2	en	0.00	0.05	0.16	12.72	12.72

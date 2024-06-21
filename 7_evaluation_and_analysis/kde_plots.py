@@ -306,7 +306,11 @@ if __name__ == "__main__":
 
             plt.xticks(fontsize=15)  # Adjust the font size of x-axis tick labels
             plt.yticks(fontsize=15)
-            save_name = f'{args.picsto}kdeD{my_dim}_{tlang}_{args.n_feats}feats_{setup}_{args.thres_type}.png'
+
+            save_dir = f'{args.picsto}{args.thres_type}/'
+            os.makedirs(save_dir, exist_ok=True)
+
+            save_name = f'{save_dir}kdeD{my_dim}_{tlang}_{args.n_feats}feats_{setup}_{args.thres_type}.png'
             plt.savefig(save_name)
 
             plt.show()

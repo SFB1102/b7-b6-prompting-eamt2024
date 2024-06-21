@@ -14,9 +14,12 @@ def juggle_tables(base=None, test=None):
     print(minus_this)
     self_guided_collector = defaultdict(list)
     features_collector = defaultdict(list)
-    translated_collector = defaultdict(list)
+    retranslated_collector = defaultdict(list)
+    ht_collector = defaultdict(list)
+    
+    ht_collector['--'].append(minus_this)
+    
     # explicit control for the order
-
     for my_setup in ['translated_min', 'self-guided_min', 'self-guided_detailed',
                      'feature-based_min', 'feature-based_detailed']:
 
@@ -24,7 +27,7 @@ def juggle_tables(base=None, test=None):
         print(setup_df)
         this = float(setup_df['F1'].values[0].split()[0])
         print(my_setup, this)
-        # exit()
+        
         res = round((this - minus_this), 2)
         if my_setup in ['self-guided_min', 'self-guided_detailed']:
             if 'self-guided_min' in my_setup:  # 'lazy'
@@ -32,23 +35,34 @@ def juggle_tables(base=None, test=None):
             else:
                 self_guided_collector['Detail'].append(res)
         elif my_setup == 'translated_min':
-            translated_collector['--'].append(res)
+            retranslated_collector['--'].append(res)
         else:
             if 'min' in my_setup:  #
                 features_collector['Min'].append(res)
             else:
                 features_collector['Detail'].append(res)
-
-    tra_df = pd.DataFrame(translated_collector)
+    
+    ht_df = pd.DataFrame(ht_collector)
     # Create a new DataFrame with the header as the first row
-    tra_header_as_row = pd.DataFrame([tra_df.columns], columns=tra_df.columns)
+    ht_header_as_row = pd.DataFrame([ht_df.columns], columns=ht_df.columns)
     # Concatenate the new DataFrame with the original DataFrame
-    tra_df0 = pd.concat([tra_header_as_row, tra_df], ignore_index=True)
+    ht_df0 = pd.concat([ht_header_as_row, ht_df], ignore_index=True)
     # Create a new DataFrame with {tlang} as values and 'lang' as the index
-    tra_new_row = pd.DataFrame({col: ['MT'] for col in tra_df0.columns}, index=[0])
+    ht_new_row = pd.DataFrame({col: ['HT'] for col in ht_df0.columns}, index=[0])
     # Concatenate the new row DataFrame with the existing DataFrame
-    zero = pd.concat([tra_new_row, tra_df0])
-    zero = zero.reset_index(drop=True)
+    ht = pd.concat([ht_new_row, ht_df0])
+    ht = ht.reset_index(drop=True)
+
+    mt_df = pd.DataFrame(retranslated_collector)
+    # Create a new DataFrame with the header as the first row
+    mt_header_as_row = pd.DataFrame([mt_df.columns], columns=mt_df.columns)
+    # Concatenate the new DataFrame with the original DataFrame
+    mt_df0 = pd.concat([mt_header_as_row, mt_df], ignore_index=True)
+    # Create a new DataFrame with {tlang} as values and 'lang' as the index
+    mt_new_row = pd.DataFrame({col: ['MT'] for col in mt_df0.columns}, index=[0])
+    # Concatenate the new row DataFrame with the existing DataFrame
+    mt = pd.concat([mt_new_row, mt_df0])
+    mt = mt.reset_index(drop=True)
 
     self_df = pd.DataFrame(self_guided_collector)
     # Create a new DataFrame with the header as the first row
@@ -74,7 +88,7 @@ def juggle_tables(base=None, test=None):
     second = pd.concat([feats_new_row, feats_df0])
     second = second.reset_index(drop=True)
 
-    both = pd.concat([zero, first, second], axis=1)
+    both = pd.concat([ht, mt, first, second], axis=1)
     header = both.head(2)
     # Delete the first two rows
     my_vals = both.iloc[2:]
@@ -88,7 +102,7 @@ for thres_type in ['ratio2.5', 'std2']:
     header = None
     final_tab_data = []
     for l in ['de', 'en']:
-        for feats in [15]:  # , 58
+        for feats in [15, 58]:
             if feats == 15:
                 baseline = pd.read_csv('2_classify1/res/seg_results_15feats.tsv', sep='\t')
                 tests = pd.read_csv(f'6_classify2/res/seg_{thres_type}_rewritten_results_15feats.tsv', sep='\t')
@@ -108,18 +122,19 @@ for thres_type in ['ratio2.5', 'std2']:
 
             print(vals)
 
-            vals.columns = [0, 1, 2, 3, 4, 5, 6, 7]
+            vals.columns = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
             header_rows.insert(0, 'feats', feats)
             header_rows.insert(0, 'lang', l)
             header_rows.insert(0, 'model', 'gpt4')
-            header_rows.columns = [0, 1, 2, 3, 4, 5, 6, 7]
+            header_rows.columns = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
             header = header_rows
             final_tab_data.append(vals)
     # stack the rows
     my_res = pd.concat([header] + final_tab_data, axis=0)
-
+    # Replace values in the first two rows of the first three columns with None
+    my_res.iloc[:2, :3] = ''
     print(my_res)
 
-    my_res.to_csv(f'{thres_type}_diffs_table.tsv', sep='\t')
+    my_res.to_csv(f'{thres_type}_diffs_table.tsv', sep='\t', index=False)

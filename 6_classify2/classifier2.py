@@ -8,6 +8,9 @@ the original data/feats_tabled/seg-450-1500.feats.tsv.gz + lists of contrastive 
 data/rewritten/curated/no_shorts_and_copies/ folder has filtered aligned outputs by lang, thres_type and mode (20 tsv)
 
 python3 6_classify2/classifier2.py --thres_type ratio2.5 --level seg --nbest 0 --nbest_by RFECV --verbosity 0 --lose_bypassed
+
+# I have produced full data tables for self-guided and mt modes because of diffs in maual curation and for consistency
+python3 6_classify2/classifier2.py --thres_type std2 --level seg --nbest 0 --nbest_by RFECV --verbosity 0 --lose_bypassed
 """
 
 import numpy as np
@@ -333,6 +336,7 @@ if __name__ == "__main__":
         for setup in ['self-guided_min', 'self-guided_detailed', 'translated_min',
                       'feature-based_min', 'feature-based_detailed']:
             # thres_type does not matter for self-guided modes, they are stored in ratio2.5
+            # I have produced full data tables for self-guided and mt modes because of diffs in manual curation and for consistency
             print(setup.upper())
             try:
                 my_rewritten = [f for f in os.listdir(f'{args.rewritten_feats}{args.thres_type}/') if f.endswith(f'.tsv.gz') and setup in f][0]
