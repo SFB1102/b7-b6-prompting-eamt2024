@@ -1,0 +1,7 @@
+0	1	2	3	4	5	6	7	8
+			HT	MT	Self-guided	Self-guided	Feature-based	Feature-based
+			--	--	Min	Detail	Min	Detail
+gpt4	de	15	81.06	-0.39	-0.2	-1.18	-1.37	-1.18
+gpt4	de	58	81.97	-0.24	0.31	-0.67	-1.57	-1.14
+gpt4	en	15	75.6	-3.02	-2.45	-3.88	-3.92	-5.37
+gpt4	en	58	78.03	-0.63	-1.2	-1.59	-0.02	-1.43

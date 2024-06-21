@@ -7,10 +7,9 @@ the original data/feats_tabled/seg-450-1500.feats.tsv.gz + lists of contrastive 
 --lose_bypassed is needed to reproduce reported results: It excludes short (<8 tokens) and copied-over segs from subsequent analysis
 data/rewritten/curated/no_shorts_and_copies/ folder has filtered aligned outputs by lang, thres_type and mode (20 tsv)
 
-python3 6_classify2/classifier2.py --thres_type ratio2.5 --level seg --nbest 0 --nbest_by RFECV --verbosity 0 --lose_bypassed
-
 # I have produced full data tables for self-guided and mt modes because of diffs in maual curation and for consistency
 python3 6_classify2/classifier2.py --thres_type std2 --level seg --nbest 0 --nbest_by RFECV --verbosity 0 --lose_bypassed
+python3 6_classify2/classifier2.py --thres_type ratio2.5 --level seg --nbest 11 --nbest_by RFECV --verbosity 0 --lose_bypassed
 """
 
 import numpy as np
